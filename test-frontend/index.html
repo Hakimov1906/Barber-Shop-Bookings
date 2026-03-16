@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Barbershop Booking Prototype</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;600;700&family=Space+Grotesk:wght@400;600;700&display=swap');
+
+    :root {
+      --bg: #0b0f14;
+      --bg-2: #0f151d;
+      --panel: #141b24;
+      --panel-2: #1b2430;
+      --text: #e7edf4;
+      --muted: #9fb0c6;
+      --accent: #4cd6b0;
+      --accent-2: #59a8ff;
+      --border: #283241;
+      --danger: #ff6b6b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Manrope", "Segoe UI", sans-serif;
+      background: radial-gradient(1100px 700px at 10% -10%, #1a2534 0%, var(--bg) 55%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px;
+    }
+
+    .ambient {
+      position: fixed;
+      inset: -30% -20% auto auto;
+      width: 55vw;
+      height: 55vw;
+      background: radial-gradient(circle at 30% 30%, rgba(76,214,176,0.18), transparent 60%),
+                  radial-gradient(circle at 70% 60%, rgba(89,168,255,0.18), transparent 55%);
+      filter: blur(40px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      background: rgba(76,214,176,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(76,214,176,0.4);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-family: "Space Grotesk", "Manrope", sans-serif;
+      font-size: 28px;
+      margin: 0;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 1.15fr) minmax(280px, 0.85fr);
+      gap: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+
+    .hero {
+      display: grid;
+      gap: 18px;
+    }
+
+    .hero p {
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .key-points {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .pill {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .stepper {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .step {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .step.active {
+      background: rgba(89,168,255,0.15);
+      color: #cfe4ff;
+      border-color: rgba(89,168,255,0.5);
+    }
+
+    label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      color: #0b1117;
+      background: var(--accent);
+      transition: transform 0.08s ease, box-shadow 0.2s ease;
+    }
+    button:active { transform: translateY(1px); }
+    button.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .select-card {
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      border-radius: 12px;
+      padding: 12px;
+      cursor: pointer;
+      transition: border 0.2s ease, transform 0.2s ease;
+    }
+
+    .select-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(76,214,176,0.4);
+      transform: translateY(-2px);
+    }
+
+    .select-card h4 { margin: 0 0 6px; font-size: 14px; }
+    .select-card p { margin: 0; font-size: 12px; color: var(--muted); }
+
+    .times {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+      gap: 8px;
+    }
+
+    .time-chip {
+      padding: 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-size: 12px;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .time-chip.active {
+      background: rgba(76,214,176,0.2);
+      border-color: rgba(76,214,176,0.6);
+      color: #d7fff4;
+    }
+
+    .nav-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .summary {
+      background: #0c1219;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .map-panel {
+      display: grid;
+      gap: 16px;
+    }
+
+    .map-card {
+      background: linear-gradient(150deg, #101825, #111a24 60%, #0c131c);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .map-card h3 { margin: 0 0 8px; font-size: 16px; }
+
+    svg { width: 100%; height: auto; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      background: var(--panel-2);
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .stat h4 { margin: 0 0 6px; font-size: 14px; }
+    .stat p { margin: 0; color: var(--muted); font-size: 12px; }
+
+    .log {
+      background: #0a0f15;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      min-height: 120px;
+      white-space: pre-wrap;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .hidden { display: none; }
+
+    .tabs {
+      display: inline-flex;
+      gap: 8px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px;
+    }
+
+    .tab-btn {
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .tab-btn.active {
+      background: rgba(76,214,176,0.2);
+      color: #d7fff4;
+    }
+
+    .api-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .inline { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 12px 0;
+    }
+
+    .hint { color: var(--muted); font-size: 12px; }
+
+    .error { color: var(--danger); font-size: 12px; }
+
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient"></div>
+  <header>
+    <div class="brand">
+      <div class="badge">Prototype</div>
+      <h1>Barbershop Booking</h1>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" id="clientTab">Клиент</button>
+      <button class="tab-btn" id="adminTab">Админ</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div>
+      <section class="panel" id="apiPanel">
+        <h3>Live API</h3>
+        <div class="api-row">
+          <input id="apiBase" type="url" placeholder="https://test-2ugi.onrender.com" />
+          <button id="saveBase">Сохранить</button>
+        </div>
+        <div class="hint" id="apiStatus">API не подключен</div>
+      </section>
+
+      <section class="panel hero" id="clientView">
+        <div>
+          <h2>Онлайн?бронирование без звонков и чатов</h2>
+          <p>Прототип показывает полный путь клиента: регистрация, выбор мастера, услуги и времени. Если подключён Live API — данные берутся с сервера.</p>
+        </div>
+
+        <div class="key-points">
+          <div class="pill">1–2 минуты на бронь</div>
+          <div class="pill">Подходит маленьким барбершопам</div>
+          <div class="pill">Админ управляет слотами</div>
+        </div>
+
+        <div class="stepper" id="stepper"></div>
+
+        <div id="steps">
+          <div class="step-content" data-step="0">
+            <h3>1. Регистрация</h3>
+            <label>Имя</label>
+            <input id="regName" type="text" placeholder="Азамат" />
+            <label>Телефон</label>
+            <input id="regPhone" type="text" placeholder="+996700000000" />
+            <label>Email (необязательно)</label>
+            <input id="regEmail" type="email" placeholder="name@mail.com" />
+            <div class="error" id="regError"></div>
+          </div>
+
+          <div class="step-content hidden" data-step="1">
+            <h3>2. Выберите барбера</h3>
+            <div class="card-grid" id="barberList"></div>
+          </div>
+
+          <div class="step-content hidden" data-step="2">
+            <h3>3. Выберите услугу</h3>
+            <div class="card-grid" id="serviceList"></div>
+          </div>
+
+          <div class="step-content hidden" data-step="3">
+            <h3>4. Дата и время</h3>
+            <label>Дата</label>
+            <input id="bookDate" type="date" />
+            <label>Свободное время</label>
+            <div class="times" id="timeList"></div>
+          </div>
+
+          <div class="step-content hidden" data-step="4">
+            <h3>5. Подтверждение</h3>
+            <div class="summary" id="summary"></div>
+            <button id="confirmBtn">Отправить заявку</button>
+          </div>
+        </div>
+
+        <div class="nav-row">
+          <button class="secondary" id="prevBtn">Назад</button>
+          <button id="nextBtn">Далее</button>
+        </div>
+      </section>
+
+      <section class="panel hidden" id="adminView">
+        <h2>Админ?панель</h2>
+        <div class="admin-grid">
+          <div>
+            <label>Логин</label>
+            <input id="adminUser" type="text" placeholder="admin" />
+            <label>Пароль</label>
+            <input id="adminPass" type="password" placeholder="password" />
+            <button id="loginBtn">Войти</button>
+            <div class="hint" id="adminStatus">Токен не установлен</div>
+          </div>
+          <div>
+            <label>Barber ID</label>
+            <input id="adminSlotBarber" type="number" min="1" value="1" />
+            <label>Дата</label>
+            <input id="adminSlotDate" type="date" />
+            <label>Times (comma)</label>
+            <input id="adminSlotTimes" type="text" placeholder="10:00,10:30,11:00" />
+            <button id="createSlots">Создать слоты</button>
+          </div>
+          <div>
+            <label>Дата (опционально)</label>
+            <input id="adminBookingsDate" type="date" />
+            <label>Barber ID (опционально)</label>
+            <input id="adminBookingsBarber" type="number" min="1" placeholder="1" />
+            <button id="loadBookings">Загрузить брони</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="summary" id="adminOutput">Здесь появятся ответы API.</div>
+      </section>
+
+      <section class="panel">
+        <h3>Log</h3>
+        <div class="log" id="log"></div>
+      </section>
+    </div>
+
+    <aside class="map-panel">
+      <div class="map-card">
+        <h3>Карта покрытия (прототип)</h3>
+        <svg viewBox="0 0 900 450" xmlns="http://www.w3.org/2000/svg" aria-label="World map">
+          <rect width="900" height="450" fill="#0d141d" rx="16" />
+          <g fill="#1d2a3b">
+            <path d="M70 120l120-40 60 20 40-25 60 10 40 30-40 50-90 20-50 30-90 10-60-30z"/>
+            <path d="M330 140l70-40 100 10 60-20 80 10 30 40-40 30-70 10-60 30-90 0-70-40z"/>
+            <path d="M520 220l110-30 70 10 40-10 50 30-20 40-90 20-70-10-80-40z"/>
+            <path d="M170 250l80 10 60 40-20 60-60 30-70-20-30-50 40-70z"/>
+            <path d="M660 280l60-20 80 10 30 30-30 40-60 20-80-10-30-40z"/>
+            <path d="M760 150l40-20 50 10 10 40-30 30-50-10-20-30z"/>
+          </g>
+          <g fill="#4cd6b0">
+            <circle cx="260" cy="180" r="6" />
+            <circle cx="420" cy="200" r="6" />
+            <circle cx="520" cy="260" r="6" />
+            <circle cx="690" cy="300" r="6" />
+            <circle cx="300" cy="300" r="6" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <h4>Среднее время брони</h4>
+          <p>1 мин 20 сек</p>
+        </div>
+        <div class="stat">
+          <h4>Свободные слоты</h4>
+          <p>12 сегодня</p>
+        </div>
+        <div class="stat">
+          <h4>Повторные клиенты</h4>
+          <p>38%</p>
+        </div>
+        <div class="stat">
+          <h4>Оценка сервиса</h4>
+          <p>4.9 / 5</p>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
