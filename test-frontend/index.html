@@ -1,4 +1,4 @@
-<!doctype html>
+п»ї<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8" />
@@ -258,42 +258,42 @@
   <div class="shell">
     <header>
       <div class="logo">
-        <div class="logo-mark">ИПД</div>
+        <div class="logo-mark">РРџР”</div>
         <div class="logo-text">Barbershop Booking</div>
       </div>
-      <div class="status" id="apiStatus">API: не проверен</div>
+      <div class="status" id="apiStatus">API: РЅРµ РїСЂРѕРІРµСЂРµРЅ</div>
     </header>
 
     <main class="grid">
       <div>
         <section class="card">
-          <h2 id="authTitle">Регистрация</h2>
-          <p>Спокойный интерфейс в стиле сервиса заказа. Зарегистрируйтесь, чтобы продолжить бронирование.</p>
+          <h2 id="authTitle">Р РµРіРёСЃС‚СЂР°С†РёСЏ</h2>
+          <p>РЎРїРѕРєРѕР№РЅС‹Р№ РёРЅС‚РµСЂС„РµР№СЃ РІ СЃС‚РёР»Рµ СЃРµСЂРІРёСЃР° Р·Р°РєР°Р·Р°. Р—Р°СЂРµРіРёСЃС‚СЂРёСЂСѓР№С‚РµСЃСЊ, С‡С‚РѕР±С‹ РїСЂРѕРґРѕР»Р¶РёС‚СЊ Р±СЂРѕРЅРёСЂРѕРІР°РЅРёРµ.</p>
 
           <div class="tabs">
-            <button class="tab-btn active" id="tabRegister">Регистрация</button>
-            <button class="tab-btn" id="tabLogin">Вход</button>
+            <button class="tab-btn active" id="tabRegister">Р РµРіРёСЃС‚СЂР°С†РёСЏ</button>
+            <button class="tab-btn" id="tabLogin">Р’С…РѕРґ</button>
           </div>
 
           <div id="registerForm">
-            <label>Имя и фамилия</label>
-            <input id="regName" type="text" placeholder="Илья Назаров" />
-            <label>Телефон</label>
+            <label>РРјСЏ Рё С„Р°РјРёР»РёСЏ</label>
+            <input id="regName" type="text" placeholder="РР»СЊСЏ РќР°Р·Р°СЂРѕРІ" />
+            <label>РўРµР»РµС„РѕРЅ</label>
             <input id="regPhone" type="text" placeholder="+996700000000" />
             <label>Email</label>
             <input id="regEmail" type="email" placeholder="name@mail.com" />
-            <label>Пароль</label>
-            <input id="regPassword" type="password" placeholder="Минимум 6 символов" />
-            <button id="registerBtn">Создать аккаунт</button>
+            <label>РџР°СЂРѕР»СЊ</label>
+            <input id="regPassword" type="password" placeholder="РњРёРЅРёРјСѓРј 6 СЃРёРјРІРѕР»РѕРІ" />
+            <button id="registerBtn">РЎРѕР·РґР°С‚СЊ Р°РєРєР°СѓРЅС‚</button>
           </div>
 
           <div id="loginForm" class="hidden">
             <label>Email</label>
             <input id="loginEmail" type="email" placeholder="name@mail.com" />
-            <label>Пароль</label>
-            <input id="loginPassword" type="password" placeholder="Ваш пароль" />
-            <button id="loginBtn">Войти</button>
-            <div class="auth-message">Забыли пароль? Это прототип.</div>
+            <label>РџР°СЂРѕР»СЊ</label>
+            <input id="loginPassword" type="password" placeholder="Р’Р°С€ РїР°СЂРѕР»СЊ" />
+            <button id="loginBtn">Р’РѕР№С‚Рё</button>
+            <div class="auth-message">Р—Р°Р±С‹Р»Рё РїР°СЂРѕР»СЊ? Р­С‚Рѕ РїСЂРѕС‚РѕС‚РёРї.</div>
           </div>
 
           <div id="authMessage" class="auth-message"></div>
@@ -302,47 +302,48 @@
             <div style="font-weight:600; margin-bottom:6px;">Live API</div>
             <label>Base URL</label>
             <input id="apiBase" type="url" placeholder="https://test-2ugi.onrender.com" />
-            <button id="saveBase" class="secondary">Сохранить и проверить</button>
+            <button id="saveBase" class="secondary">РЎРѕС…СЂР°РЅРёС‚СЊ Рё РїСЂРѕРІРµСЂРёС‚СЊ</button>
           </div>
         </section>
 
         <section class="card booking-card" style="margin-top: 20px;">
-          <h3>Бронирование</h3>
-          <div class="booking-note" id="bookingNote">Сначала зарегистрируйтесь или войдите.</div>
+          <h3>Р‘СЂРѕРЅРёСЂРѕРІР°РЅРёРµ</h3>
+          <div class="booking-note" id="bookingNote">РЎРЅР°С‡Р°Р»Р° Р·Р°СЂРµРіРёСЃС‚СЂРёСЂСѓР№С‚РµСЃСЊ РёР»Рё РІРѕР№РґРёС‚Рµ.</div>
 
-          <label>Барбер</label>
+          <label>Р‘Р°СЂР±РµСЂ</label>
           <select id="barberSelect"></select>
 
-          <label>Услуга</label>
+          <label>РЈСЃР»СѓРіР°</label>
           <select id="serviceSelect"></select>
 
-          <label>Дата</label>
+          <label>Р”Р°С‚Р°</label>
           <input id="bookingDate" type="date" />
 
-          <label>Время</label>
+          <label>Р’СЂРµРјСЏ</label>
           <div class="times" id="timeList"></div>
 
-          <button id="bookingBtn" disabled>Подтвердить бронирование</button>
+          <button id="bookingBtn" disabled>РџРѕРґС‚РІРµСЂРґРёС‚СЊ Р±СЂРѕРЅРёСЂРѕРІР°РЅРёРµ</button>
         </section>
       </div>
 
       <section class="map-placeholder">
-        Здесь будет карта
+        Р—РґРµСЃСЊ Р±СѓРґРµС‚ РєР°СЂС‚Р°
       </section>
     </main>
 
     <footer class="footer">
       <div class="footer-links">
-        <a href="#">Вакансии</a>
-        <a href="#">Статус сервисов</a>
-        <a href="#">Условия использования</a>
-        <a href="#">Конфиденциальность</a>
-        <a href="#">Политика Cookies</a>
+        <a href="#">Р’Р°РєР°РЅСЃРёРё</a>
+        <a href="#">РЎС‚Р°С‚СѓСЃ СЃРµСЂРІРёСЃРѕРІ</a>
+        <a href="#">РЈСЃР»РѕРІРёСЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ</a>
+        <a href="#">РљРѕРЅС„РёРґРµРЅС†РёР°Р»СЊРЅРѕСЃС‚СЊ</a>
+        <a href="#">РџРѕР»РёС‚РёРєР° Cookies</a>
       </div>
-      <div>© 2026 ООО «ИПД»</div>
+      <div>В© 2026 РћРћРћ В«РРџР”В»</div>
     </footer>
   </div>
 
   <script src="app.js"></script>
 </body>
 </html>
+
