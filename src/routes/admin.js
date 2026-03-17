@@ -2,7 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../db/pool');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireRole } = require('../middleware/auth');
 const {
   loginSchema,
   slotCreateSchema,
@@ -55,7 +55,7 @@ router.post('/login', async (req, res) => {
   res.json({ token });
 });
 
-router.use(requireAuth);
+router.use(requireAuth, requireRole('admin'));
 
 router.get('/bookings', async (req, res, next) => {
   const { data, error } = validate(bookingsQuerySchema, req.query);

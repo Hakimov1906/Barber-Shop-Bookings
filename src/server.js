@@ -10,9 +10,10 @@ const adminRoutes = require('./routes/admin');
 
 const app = express();
 
-const corsOrigin = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-  : '*';
+const rawCors = (process.env.CORS_ORIGIN || '').trim();
+const corsOrigin = !rawCors || rawCors === '*'
+  ? true
+  : rawCors.split(',').map((o) => o.trim());
 
 app.use(helmet());
 app.use(cors({ origin: corsOrigin }));

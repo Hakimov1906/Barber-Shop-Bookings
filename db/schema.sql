@@ -14,6 +14,17 @@ CREATE TABLE IF NOT EXISTS services (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  full_name TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  phone TEXT NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS users_email_idx ON users(email);
+
 CREATE TABLE IF NOT EXISTS slots (
   id SERIAL PRIMARY KEY,
   barber_id INT NOT NULL REFERENCES barbers(id) ON DELETE CASCADE,
@@ -26,6 +37,7 @@ CREATE TABLE IF NOT EXISTS slots (
 
 CREATE TABLE IF NOT EXISTS bookings (
   id SERIAL PRIMARY KEY,
+  user_id INT NOT NULL REFERENCES users(id),
   client_name TEXT NOT NULL,
   client_phone TEXT NOT NULL,
   service_id INT NOT NULL REFERENCES services(id),
@@ -38,15 +50,5 @@ CREATE TABLE IF NOT EXISTS bookings (
 
 CREATE INDEX IF NOT EXISTS bookings_date_idx ON bookings(date);
 CREATE INDEX IF NOT EXISTS bookings_barber_idx ON bookings(barber_id);
+CREATE INDEX IF NOT EXISTS bookings_user_idx ON bookings(user_id);
 CREATE INDEX IF NOT EXISTS slots_date_idx ON slots(date);
-
-CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  full_name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
-  phone TEXT NOT NULL UNIQUE,
-  password_hash TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS users_email_idx ON users(email);

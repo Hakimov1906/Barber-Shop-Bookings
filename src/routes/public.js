@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db/pool');
+const { requireAuth, requireRole } = require('../middleware/auth');
 const {
   bookingSchema,
   slotQuerySchema,
@@ -69,6 +70,10 @@ router.post('/auth/register', async (req, res, next) => {
     return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
   }
 
+  if (!process.env.JWT_SECRET) {
+    return res.status(500).json({ error: 'JWT_SECRET is not configured' });
+  }
+
   const client = await pool.connect();
   try {
     const exists = await client.query(
@@ -89,6 +94,9 @@ router.post('/auth/register', async (req, res, next) => {
 
     res.status(201).json({ user: insertRes.rows[0] });
   } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'User already exists' });
+    }
     next(err);
   } finally {
     client.release();
@@ -99,6 +107,10 @@ router.post('/auth/login', async (req, res, next) => {
   const { data, error } = validate(userLoginSchema, req.body);
   if (error) {
     return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
+  }
+
+  if (!process.env.JWT_SECRET) {
+    return res.status(500).json({ error: 'JWT_SECRET is not configured' });
   }
 
   try {
@@ -116,9 +128,11 @@ router.post('/auth/login', async (req, res, next) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = process.env.JWT_SECRET
-      ? jwt.sign({ sub: user.id, role: 'user' }, process.env.JWT_SECRET, { expiresIn: '7d' })
-      : null;
+    const token = jwt.sign(
+      { sub: user.id, role: 'user' },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
 
     res.json({
       token,
@@ -134,15 +148,29 @@ router.post('/auth/login', async (req, res, next) => {
   }
 });
 
-router.post('/bookings', async (req, res, next) => {
+router.post('/bookings', requireAuth, requireRole('user'), async (req, res, next) => {
   const { data, error } = validate(bookingSchema, req.body);
   if (error) {
     return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
   }
 
+  const userId = Number(req.user.sub);
+  if (!Number.isInteger(userId)) {
+    return res.status(401).json({ error: 'Invalid token subject' });
+  }
+
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+
+    const userRes = await client.query(
+      'SELECT id, full_name, phone FROM users WHERE id = $1',
+      [userId]
+    );
+    if (!userRes.rowCount) {
+      await client.query('ROLLBACK');
+      return res.status(401).json({ error: 'User not found' });
+    }
 
     const serviceRes = await client.query(
       'SELECT id FROM services WHERE id = $1 AND is_active = true',
@@ -172,14 +200,16 @@ router.post('/bookings', async (req, res, next) => {
       return res.status(409).json({ error: 'Selected time slot is not available' });
     }
 
+    const user = userRes.rows[0];
     const slotId = slotRes.rows[0].id;
     const bookingRes = await client.query(
-      `INSERT INTO bookings (client_name, client_phone, service_id, barber_id, slot_id, date, time)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `INSERT INTO bookings (user_id, client_name, client_phone, service_id, barber_id, slot_id, date, time)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING id, created_at`,
       [
-        data.clientName,
-        data.clientPhone,
+        user.id,
+        user.full_name,
+        user.phone,
         data.serviceId,
         data.barberId,
         slotId,

@@ -5,8 +5,6 @@ const timeRegex = /^\d{2}:\d{2}$/;
 const phoneRegex = /^[0-9+()\-\s]{7,20}$/;
 
 const bookingSchema = z.object({
-  clientName: z.string().min(2).max(80),
-  clientPhone: z.string().regex(phoneRegex, 'Invalid phone number'),
   serviceId: z.coerce.number().int().positive(),
   barberId: z.coerce.number().int().positive(),
   date: z.string().regex(dateRegex, 'Invalid date format'),
