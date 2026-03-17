@@ -67,7 +67,7 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
   const handleConfirm = () => {
     setStep(4);
     toast({
-      title: "Запись оформлена!",
+      title: "Жазылуу ийгиликтүү!",
       description: `${master.name} — ${selectedService?.name}, ${format(selectedDate!, "d MMMM", { locale: ru })}, ${selectedTime}`,
     });
   };
@@ -76,13 +76,12 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Запись к мастеру</DialogTitle>
+          <DialogTitle>Мастерге жазылуу</DialogTitle>
           <DialogDescription>
             {master.name} • {master.role}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Steps indicator */}
         <div className="flex items-center gap-2">
           {[1, 2, 3].map((s) => (
             <div
@@ -96,7 +95,6 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
         </div>
 
         <AnimatePresence mode="wait">
-          {/* Step 1 — Service */}
           {step === 1 && (
             <motion.div
               key="step1"
@@ -105,7 +103,7 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-3"
             >
-              <p className="text-sm font-medium">Выберите услугу</p>
+              <p className="text-sm font-medium">Кызматты тандаңыз</p>
               <div className="max-h-60 space-y-2 overflow-y-auto pr-1">
                 {availableServices.map((s) => (
                   <button
@@ -128,7 +126,7 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
                       </span>
                     </div>
                     <span className="text-sm font-semibold tabular-nums">
-                      {s.price.toLocaleString("ru-RU")} ₽
+                      {s.price} сом
                     </span>
                   </button>
                 ))}
@@ -136,7 +134,6 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
             </motion.div>
           )}
 
-          {/* Step 2 — Date */}
           {step === 2 && (
             <motion.div
               key="step2"
@@ -145,7 +142,7 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-3"
             >
-              <p className="text-sm font-medium">Выберите дату</p>
+              <p className="text-sm font-medium">Күндү тандаңыз</p>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -158,7 +155,7 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {selectedDate
                       ? format(selectedDate, "d MMMM yyyy", { locale: ru })
-                      : "Выберите дату"}
+                      : "Күндү тандаңыз"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -180,12 +177,11 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
                 </PopoverContent>
               </Popover>
               <Button variant="ghost" size="sm" onClick={() => setStep(1)}>
-                ← Назад
+                ← Артка
               </Button>
             </motion.div>
           )}
 
-          {/* Step 3 — Time */}
           {step === 3 && (
             <motion.div
               key="step3"
@@ -194,7 +190,7 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
               exit={{ opacity: 0, x: -20 }}
               className="space-y-3"
             >
-              <p className="text-sm font-medium">Выберите время</p>
+              <p className="text-sm font-medium">Убакытты тандаңыз</p>
               <div className="grid grid-cols-4 gap-2">
                 {timeSlots.map((t) => (
                   <button
@@ -214,20 +210,19 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
               </div>
               <div className="flex items-center justify-between pt-2">
                 <Button variant="ghost" size="sm" onClick={() => setStep(2)}>
-                  ← Назад
+                  ← Артка
                 </Button>
                 <Button
                   size="sm"
                   disabled={!selectedTime}
                   onClick={handleConfirm}
                 >
-                  Подтвердить
+                  Ырастоо
                 </Button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 4 — Confirmation */}
           {step === 4 && (
             <motion.div
               key="step4"
@@ -237,20 +232,20 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
             >
               <CheckCircle2 className="h-12 w-12 text-accent" />
               <div>
-                <p className="text-lg font-semibold">Вы записаны!</p>
+                <p className="text-lg font-semibold">Сиз жазылдыңыз!</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {selectedService?.name} у {master.name}
+                  {selectedService?.name} — {master.name}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {selectedDate && format(selectedDate, "d MMMM yyyy", { locale: ru })},{" "}
                   {selectedTime}
                 </p>
                 <p className="mt-1 text-sm font-medium">
-                  {selectedService?.price.toLocaleString("ru-RU")} ₽
+                  {selectedService?.price} сом
                 </p>
               </div>
               <Button onClick={() => handleClose(false)} className="mt-2">
-                Закрыть
+                Жабуу
               </Button>
             </motion.div>
           )}

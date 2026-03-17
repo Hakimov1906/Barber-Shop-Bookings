@@ -3,30 +3,29 @@ import { motion } from "framer-motion";
 import { masters } from "@/data/masters";
 import MasterCard from "@/components/MasterCard";
 
-const filters = ["Все", "Барбер", "Стилист", "Колорист"];
-const locations = ["Все", "Центр", "Север", "Юг"];
+const filters = ["Баары", "Барбер", "Стилист", "Колорист"];
+const locations = ["Баары", "Центр", "Север", "Юг"];
 
 const Masters = () => {
-  const [activeFilter, setActiveFilter] = useState("Все");
-  const [activeLocation, setActiveLocation] = useState("Все");
+  const [activeFilter, setActiveFilter] = useState("Баары");
+  const [activeLocation, setActiveLocation] = useState("Баары");
 
   const filtered = masters.filter((m) => {
-    const roleMatch = activeFilter === "Все" || m.role === activeFilter;
-    const locMatch = activeLocation === "Все" || m.location === activeLocation;
+    const roleMatch = activeFilter === "Баары" || m.role === activeFilter;
+    const locMatch = activeLocation === "Баары" || m.location === activeLocation;
     return roleMatch && locMatch;
   });
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-12">
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <h1 className="text-3xl font-semibold">Мастера</h1>
-        <p className="mt-2 text-muted-foreground">Выберите мастера и запишитесь на удобное время</p>
+        <h1 className="text-3xl font-semibold">Мастерлер</h1>
+        <p className="mt-2 text-muted-foreground">Мастерди тандап, ыңгайлуу убакытка жазылыңыз</p>
       </motion.div>
 
-      {/* Filters */}
       <div className="mt-8 flex flex-wrap gap-6">
         <div className="flex flex-wrap gap-2">
-          <span className="mr-1 self-center text-xs text-muted-foreground uppercase tracking-wider">Специализация</span>
+          <span className="mr-1 self-center text-xs text-muted-foreground uppercase tracking-wider">Адистик</span>
           {filters.map((f) => (
             <button
               key={f}
@@ -59,7 +58,6 @@ const Masters = () => {
         </div>
       </div>
 
-      {/* Grid */}
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {filtered.map((m, i) => (
           <motion.div
@@ -75,7 +73,7 @@ const Masters = () => {
 
       {filtered.length === 0 && (
         <div className="mt-16 text-center">
-          <p className="text-muted-foreground">Мастеров по заданным фильтрам не найдено</p>
+          <p className="text-muted-foreground">Берилген фильтрлер боюнча мастерлер табылган жок</p>
         </div>
       )}
     </div>
