@@ -25,6 +25,21 @@ services:
         sync: false
       - key: CORS_ORIGIN
         sync: false
+  - type: cron
+    name: barbershop-seed-refresh
+    runtime: node
+    schedule: "0 3 * * *"
+    buildCommand: npm ci
+    startCommand: node scripts/seed_refresh.js
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: barbershop-postgres
+          property: connectionString
+      - key: PGSSL
+        value: "true"
+      - key: RESET_DEMO
+        value: "false"
 
 databases:
   - name: barbershop-postgres
