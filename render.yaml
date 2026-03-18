@@ -28,6 +28,7 @@ services:
   - type: cron
     name: barbershop-seed-refresh
     runtime: node
+    region: frankfurt
     schedule: "0 3 * * *"
     buildCommand: npm ci
     startCommand: node scripts/seed_refresh.js
