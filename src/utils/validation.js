@@ -46,6 +46,11 @@ const bookingsQuerySchema = z.object({
   barberId: z.coerce.number().int().positive().optional()
 });
 
+const usersQuerySchema = z.object({
+  limit: z.coerce.number().int().positive().max(200).optional(),
+  offset: z.coerce.number().int().nonnegative().optional()
+});
+
 function validate(schema, data) {
   const result = schema.safeParse(data);
   if (result.success) {
@@ -62,5 +67,6 @@ module.exports = {
   slotCreateSchema,
   slotQuerySchema,
   bookingsQuerySchema,
+  usersQuerySchema,
   validate
 };

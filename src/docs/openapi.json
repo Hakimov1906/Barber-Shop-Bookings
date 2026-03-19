@@ -1,0 +1,320 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Barbershop Booking API",
+    "version": "1.0.0",
+    "description": "Backend API for barbershop booking."
+  },
+  "servers": [
+    {
+      "url": "https://barbershop-booking-api.onrender.com"
+    },
+    {
+      "url": "http://localhost:4000"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "RegisterRequest": {
+        "type": "object",
+        "required": ["fullName", "email", "phone", "password"],
+        "properties": {
+          "fullName": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "phone": { "type": "string" },
+          "password": { "type": "string", "minLength": 6 }
+        }
+      },
+      "UserLoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" }
+        }
+      },
+      "AdminLoginRequest": {
+        "type": "object",
+        "required": ["username", "password"],
+        "properties": {
+          "username": { "type": "string" },
+          "password": { "type": "string" }
+        }
+      },
+      "BookingRequest": {
+        "type": "object",
+        "required": ["serviceId", "barberId", "date", "time"],
+        "properties": {
+          "serviceId": { "type": "integer" },
+          "barberId": { "type": "integer" },
+          "date": { "type": "string", "example": "2026-03-20" },
+          "time": { "type": "string", "example": "10:30" }
+        }
+      },
+      "SlotCreateRequest": {
+        "type": "object",
+        "required": ["barberId", "date", "times"],
+        "properties": {
+          "barberId": { "type": "integer" },
+          "date": { "type": "string", "example": "2026-03-20" },
+          "times": {
+            "type": "array",
+            "items": { "type": "string", "example": "10:00" }
+          },
+          "status": { "type": "string", "enum": ["available", "blocked"] }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health check",
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/api/barbers": {
+      "get": {
+        "summary": "List active barbers",
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/api/services": {
+      "get": {
+        "summary": "List active services",
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/api/slots": {
+      "get": {
+        "summary": "List available slots",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "barberId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/api/auth/register": {
+      "post": {
+        "summary": "Register user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "409": { "description": "User already exists" }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "Login user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/UserLoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/bookings": {
+      "post": {
+        "summary": "Create booking",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BookingRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "409": { "description": "Slot not available" }
+        }
+      }
+    },
+    "/api/admin/login": {
+      "post": {
+        "summary": "Admin login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AdminLoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/admin/bookings": {
+      "get": {
+        "summary": "List bookings",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "barberId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/api/admin/bookings/{id}": {
+      "delete": {
+        "summary": "Delete booking",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Deleted" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/api/admin/slots": {
+      "get": {
+        "summary": "List slots",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "barberId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["available", "booked", "blocked"] }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      },
+      "post": {
+        "summary": "Create slots",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SlotCreateRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" }
+        }
+      }
+    },
+    "/api/admin/slots/{id}": {
+      "delete": {
+        "summary": "Delete slot",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Deleted" },
+          "409": { "description": "Slot is booked" },
+          "404": { "description": "Not found" }
+        }
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "summary": "List users",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 50 }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0 }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    }
+  }
+}

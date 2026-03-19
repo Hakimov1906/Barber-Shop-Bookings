@@ -8,6 +8,7 @@ const {
   slotCreateSchema,
   slotQuerySchema,
   bookingsQuerySchema,
+  usersQuerySchema,
   validate
 } = require('../utils/validation');
 
@@ -88,6 +89,31 @@ router.get('/bookings', async (req, res, next) => {
 
     const result = await pool.query(sql, params);
     res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/users', async (req, res, next) => {
+  const { data, error } = validate(usersQuerySchema, req.query);
+  if (error) {
+    return res.status(400).json({ error: 'Invalid query', details: error.fieldErrors });
+  }
+
+  const limit = data.limit || 50;
+  const offset = data.offset || 0;
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT id, full_name, email, phone, created_at
+      FROM users
+      ORDER BY created_at DESC
+      LIMIT $1 OFFSET $2
+      `,
+      [limit, offset]
+    );
+    res.json({ items: result.rows, limit, offset });
   } catch (err) {
     next(err);
   }

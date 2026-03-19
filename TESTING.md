@@ -125,3 +125,118 @@ Expected: `200 {"status":"deleted"}` unless slot is booked, then `409`.
 4. Duplicate register (email/phone) returns `409`.
 5. Booking an occupied slot returns `409`.
 6. Deleting nonexistent booking/slot returns `404`.
+
+**PowerShell Commands (Windows)**
+
+Smoke:
+```powershell
+Invoke-RestMethod https://barbershop-booking-api.onrender.com/api/health
+Invoke-RestMethod https://barbershop-booking-api.onrender.com/api/barbers
+Invoke-RestMethod https://barbershop-booking-api.onrender.com/api/services
+```
+
+Register user:
+```powershell
+$body = @{
+  fullName = "Test User"
+  email = "test.user+1@example.com"
+  phone = "+996700000001"
+  password = "password123"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Method Post `
+  -Uri https://barbershop-booking-api.onrender.com/api/auth/register `
+  -ContentType "application/json" `
+  -Body $body
+```
+
+Login user:
+```powershell
+$body = @{
+  email = "test.user+1@example.com"
+  password = "password123"
+} | ConvertTo-Json
+
+$login = Invoke-RestMethod -Method Post `
+  -Uri https://barbershop-booking-api.onrender.com/api/auth/login `
+  -ContentType "application/json" `
+  -Body $body
+
+$USER_TOKEN = $login.token
+```
+
+Admin login:
+```powershell
+$body = @{
+  username = "<ADMIN_USER>"
+  password = "<ADMIN_PASSWORD>"
+} | ConvertTo-Json
+
+$adminLogin = Invoke-RestMethod -Method Post `
+  -Uri https://barbershop-booking-api.onrender.com/api/admin/login `
+  -ContentType "application/json" `
+  -Body $body
+
+$ADMIN_TOKEN = $adminLogin.token
+```
+
+Create slots (admin):
+```powershell
+$body = @{
+  barberId = 1
+  date = "2026-03-20"
+  times = @("10:00","10:30","11:00")
+  status = "available"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Method Post `
+  -Uri https://barbershop-booking-api.onrender.com/api/admin/slots `
+  -Headers @{ Authorization = "Bearer $ADMIN_TOKEN" } `
+  -ContentType "application/json" `
+  -Body $body
+```
+
+Check slots (public):
+```powershell
+Invoke-RestMethod "https://barbershop-booking-api.onrender.com/api/slots?date=2026-03-20&barberId=1"
+```
+
+Create booking (user):
+```powershell
+$body = @{
+  serviceId = 1
+  barberId = 1
+  date = "2026-03-20"
+  time = "10:30"
+} | ConvertTo-Json
+
+$booking = Invoke-RestMethod -Method Post `
+  -Uri https://barbershop-booking-api.onrender.com/api/bookings `
+  -Headers @{ Authorization = "Bearer $USER_TOKEN" } `
+  -ContentType "application/json" `
+  -Body $body
+
+$BOOKING_ID = $booking.id
+```
+
+List bookings (admin):
+```powershell
+Invoke-RestMethod `
+  -Uri "https://barbershop-booking-api.onrender.com/api/admin/bookings?date=2026-03-20&barberId=1" `
+  -Headers @{ Authorization = "Bearer $ADMIN_TOKEN" }
+```
+
+Delete booking (admin):
+```powershell
+Invoke-RestMethod -Method Delete `
+  -Uri "https://barbershop-booking-api.onrender.com/api/admin/bookings/$BOOKING_ID" `
+  -Headers @{ Authorization = "Bearer $ADMIN_TOKEN" }
+```
+
+Delete slot (admin):
+```powershell
+$SLOT_ID = 1 # replace with a real slot id
+Invoke-RestMethod -Method Delete `
+  -Uri "https://barbershop-booking-api.onrender.com/api/admin/slots/$SLOT_ID" `
+  -Headers @{ Authorization = "Bearer $ADMIN_TOKEN" }
+```

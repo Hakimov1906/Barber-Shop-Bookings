@@ -4,10 +4,12 @@ const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
+const swaggerUi = require('swagger-ui-express');
 
 const publicRoutes = require('./routes/public');
 const adminRoutes = require('./routes/admin');
 const { refreshSeeds } = require('./db/seed');
+const openapi = require('./docs/openapi.json');
 
 const app = express();
 
@@ -20,6 +22,8 @@ app.use(helmet());
 app.use(cors({ origin: corsOrigin }));
 app.use(express.json({ limit: '1mb' }));
 app.use(morgan('dev'));
+
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openapi, { explorer: true }));
 
 app.use('/api', publicRoutes);
 app.use('/api/admin', adminRoutes);
