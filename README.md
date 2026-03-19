@@ -16,6 +16,15 @@ psql -d barbershop -f db/seed.sql
 
 Server runs on `http://localhost:4000` by default.
 
+## Frontend
+
+Live frontend: `https://hairline-style-shop.vercel.app/`
+
+To enable CORS for the frontend, set `CORS_ORIGIN` in your `.env`:
+```
+CORS_ORIGIN=https://hairline-style-shop.vercel.app,http://localhost:3000
+```
+
 ## API endpoints
 
 Public:
