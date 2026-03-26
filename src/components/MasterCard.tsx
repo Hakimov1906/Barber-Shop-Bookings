@@ -44,7 +44,7 @@ const MasterCard = ({ master }: { master: Master }) => {
             )}
           </div>
           <div className="mt-2 flex items-center gap-1 text-sm text-muted-foreground">
-            <Star className="h-3.5 w-3.5 fill-foreground text-foreground" />
+            <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
             <span className="tabular font-medium text-foreground">{master.rating}</span>
             <span>- {master.reviews} {tr("master.reviews")}</span>
           </div>

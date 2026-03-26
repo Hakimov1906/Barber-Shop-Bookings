@@ -158,8 +158,8 @@ const MasterDetail = () => {
                   key={index}
                   className={`h-4 w-4 ${
                     index < Math.round(master.rating)
-                      ? "fill-foreground text-foreground"
-                      : "text-muted"
+                      ? "fill-amber-400 text-amber-400"
+                      : "text-amber-200"
                   }`}
                 />
               ))}
@@ -270,8 +270,8 @@ const MasterDetail = () => {
                       key={index}
                       className={`h-3.5 w-3.5 ${
                         index < review.rating
-                          ? "fill-foreground text-foreground"
-                          : "text-muted"
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-amber-200"
                       }`}
                     />
                   ))}
@@ -315,8 +315,8 @@ const MasterDetail = () => {
                   <Star
                     className={`h-5 w-5 ${
                       value <= reviewRating
-                        ? "fill-foreground text-foreground"
-                        : "text-muted"
+                        ? "fill-amber-400 text-amber-400"
+                        : "text-amber-200"
                     }`}
                   />
                 </button>
