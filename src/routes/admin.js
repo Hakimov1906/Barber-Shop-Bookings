@@ -2,6 +2,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../db/pool');
+const asyncHandler = require('../middleware/asyncHandler');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const {
   loginSchema,
@@ -14,7 +15,7 @@ const {
 
 const router = express.Router();
 
-router.post('/login', async (req, res) => {
+router.post('/login', asyncHandler(async (req, res) => {
   const { data, error } = validate(loginSchema, req.body);
   if (error) {
     return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
@@ -54,11 +55,11 @@ router.post('/login', async (req, res) => {
   );
 
   res.json({ token });
-});
+}));
 
 router.use(requireAuth, requireRole('admin'));
 
-router.get('/bookings', async (req, res, next) => {
+router.get('/bookings', asyncHandler(async (req, res, next) => {
   const { data, error } = validate(bookingsQuerySchema, req.query);
   if (error) {
     return res.status(400).json({ error: 'Invalid query', details: error.fieldErrors });
@@ -92,9 +93,9 @@ router.get('/bookings', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+}));
 
-router.get('/users', async (req, res, next) => {
+router.get('/users', asyncHandler(async (req, res, next) => {
   const { data, error } = validate(usersQuerySchema, req.query);
   if (error) {
     return res.status(400).json({ error: 'Invalid query', details: error.fieldErrors });
@@ -117,9 +118,9 @@ router.get('/users', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+}));
 
-router.delete('/bookings/:id', async (req, res, next) => {
+router.delete('/bookings/:id', asyncHandler(async (req, res, next) => {
   const bookingId = Number(req.params.id);
   if (!Number.isInteger(bookingId) || bookingId <= 0) {
     return res.status(400).json({ error: 'Invalid booking id' });
@@ -150,9 +151,9 @@ router.delete('/bookings/:id', async (req, res, next) => {
   } finally {
     client.release();
   }
-});
+}));
 
-router.get('/slots', async (req, res, next) => {
+router.get('/slots', asyncHandler(async (req, res, next) => {
   const { data, error } = validate(slotQuerySchema, req.query);
   if (error) {
     return res.status(400).json({ error: 'Invalid query', details: error.fieldErrors });
@@ -179,9 +180,9 @@ router.get('/slots', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+}));
 
-router.post('/slots', async (req, res, next) => {
+router.post('/slots', asyncHandler(async (req, res, next) => {
   const { data, error } = validate(slotCreateSchema, req.body);
   if (error) {
     return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
@@ -225,9 +226,9 @@ router.post('/slots', async (req, res, next) => {
   } finally {
     client.release();
   }
-});
+}));
 
-router.delete('/slots/:id', async (req, res, next) => {
+router.delete('/slots/:id', asyncHandler(async (req, res, next) => {
   const slotId = Number(req.params.id);
   if (!Number.isInteger(slotId) || slotId <= 0) {
     return res.status(400).json({ error: 'Invalid slot id' });
@@ -261,6 +262,6 @@ router.delete('/slots/:id', async (req, res, next) => {
   } finally {
     client.release();
   }
-});
+}));
 
 module.exports = router;

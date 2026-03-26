@@ -29,8 +29,9 @@ CORS_ORIGIN=https://hairline-style-shop.vercel.app,http://localhost:3000
 
 Public:
 - `GET /api/health`
-- `GET /api/barbers`
+- `GET /api/barbers` (returns full master cards data, including role/rating/specialties)
 - `GET /api/services`
+- `GET /api/products?category=men|women|unisex&type=Care`
 - `GET /api/slots?date=YYYY-MM-DD&barberId=1`
 - `POST /api/auth/register`
 - `POST /api/auth/login`

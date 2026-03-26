@@ -70,6 +70,19 @@
           },
           "status": { "type": "string", "enum": ["available", "blocked"] }
         }
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "price": { "type": "string", "example": "650.00" },
+          "image_url": { "type": "string", "nullable": true },
+          "category": { "type": "string", "enum": ["men", "women", "unisex"] },
+          "type": { "type": "string" },
+          "stock_qty": { "type": "integer" }
+        }
       }
     }
   },
@@ -93,6 +106,28 @@
     "/api/services": {
       "get": {
         "summary": "List active services",
+        "responses": {
+          "200": { "description": "OK" }
+        }
+      }
+    },
+    "/api/products": {
+      "get": {
+        "summary": "List active shop products",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string", "enum": ["men", "women", "unisex"] }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
         "responses": {
           "200": { "description": "OK" }
         }

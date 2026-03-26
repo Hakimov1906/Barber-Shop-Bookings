@@ -2,10 +2,12 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db/pool');
+const asyncHandler = require('../middleware/asyncHandler');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const {
   bookingSchema,
   slotQuerySchema,
+  productsQuerySchema,
   registerSchema,
   userLoginSchema,
   validate
@@ -17,18 +19,34 @@ router.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-router.get('/barbers', async (req, res, next) => {
+router.get('/barbers', asyncHandler(async (req, res, next) => {
   try {
     const result = await pool.query(
-      'SELECT id, name FROM barbers WHERE is_active = true ORDER BY name'
+      `
+      SELECT
+        id,
+        name,
+        role,
+        experience_years,
+        rating,
+        reviews_count,
+        image_url,
+        is_available,
+        specialties,
+        location,
+        bio
+      FROM barbers
+      WHERE is_active = true
+      ORDER BY name
+      `
     );
     res.json(result.rows);
   } catch (err) {
     next(err);
   }
-});
+}));
 
-router.get('/services', async (req, res, next) => {
+router.get('/services', asyncHandler(async (req, res, next) => {
   try {
     const result = await pool.query(
       'SELECT id, name, duration_minutes, price FROM services WHERE is_active = true ORDER BY name'
@@ -37,9 +55,50 @@ router.get('/services', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+}));
 
-router.get('/slots', async (req, res, next) => {
+router.get('/products', asyncHandler(async (req, res, next) => {
+  const { data, error } = validate(productsQuerySchema, req.query);
+  if (error) {
+    return res.status(400).json({ error: 'Invalid query', details: error.fieldErrors });
+  }
+
+  try {
+    const params = [];
+    let sql = `
+      SELECT
+        id,
+        name,
+        description,
+        price,
+        image_url,
+        category,
+        type,
+        stock_qty
+      FROM products
+      WHERE is_active = true
+    `;
+
+    if (data.category) {
+      params.push(data.category);
+      sql += ` AND category = $${params.length}`;
+    }
+
+    if (data.type) {
+      params.push(data.type);
+      sql += ` AND type = $${params.length}`;
+    }
+
+    sql += ' ORDER BY name';
+
+    const result = await pool.query(sql, params);
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+}));
+
+router.get('/slots', asyncHandler(async (req, res, next) => {
   const { data, error } = validate(slotQuerySchema, req.query);
   if (error) {
     return res.status(400).json({ error: 'Invalid query', details: error.fieldErrors });
@@ -62,9 +121,9 @@ router.get('/slots', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+}));
 
-router.post('/auth/register', async (req, res, next) => {
+router.post('/auth/register', asyncHandler(async (req, res, next) => {
   const { data, error } = validate(registerSchema, req.body);
   if (error) {
     return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
@@ -101,9 +160,9 @@ router.post('/auth/register', async (req, res, next) => {
   } finally {
     client.release();
   }
-});
+}));
 
-router.post('/auth/login', async (req, res, next) => {
+router.post('/auth/login', asyncHandler(async (req, res, next) => {
   const { data, error } = validate(userLoginSchema, req.body);
   if (error) {
     return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
@@ -146,9 +205,9 @@ router.post('/auth/login', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
+}));
 
-router.post('/bookings', requireAuth, requireRole('user'), async (req, res, next) => {
+router.post('/bookings', requireAuth, requireRole('user'), asyncHandler(async (req, res, next) => {
   const { data, error } = validate(bookingSchema, req.body);
   if (error) {
     return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
@@ -231,6 +290,6 @@ router.post('/bookings', requireAuth, requireRole('user'), async (req, res, next
   } finally {
     client.release();
   }
-});
+}));
 
 module.exports = router;
