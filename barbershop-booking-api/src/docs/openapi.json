@@ -902,7 +902,7 @@
     },
     "/api/slots": {
       "get": {
-        "summary": "List available slots",
+        "summary": "List slots",
         "operationId": "getSlots",
         "parameters": [
           {
@@ -920,6 +920,15 @@
             "required": false,
             "schema": {
               "type": "integer"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["available", "booked", "blocked"]
             }
           }
         ],

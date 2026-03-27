@@ -2,7 +2,63 @@ const { z } = require('zod');
 
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-const phoneRegex = /^[0-9+()\-\s]{7,20}$/;
+const phoneRegex = /^\+?[0-9]{7,20}$/;
+
+function normalizeFullName(value) {
+  return String(value || '')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function normalizeEmail(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase();
+}
+
+function normalizePhone(value) {
+  const raw = String(value || '').trim();
+  const hasPlus = raw.startsWith('+');
+  const digits = raw.replace(/\D/g, '');
+
+  if (!digits) {
+    return '';
+  }
+
+  return hasPlus ? `+${digits}` : digits;
+}
+
+function normalizeRegisterPayload(payload = {}) {
+  return {
+    ...payload,
+    fullName: normalizeFullName(payload.fullName),
+    email: normalizeEmail(payload.email),
+    phone: normalizePhone(payload.phone)
+  };
+}
+
+function normalizeUserLoginPayload(payload = {}) {
+  return {
+    ...payload,
+    email: normalizeEmail(payload.email)
+  };
+}
+
+function normalizeUserProfileUpdatePayload(payload = {}) {
+  const normalized = { ...payload };
+
+  if (typeof payload.fullName !== 'undefined') {
+    normalized.fullName = normalizeFullName(payload.fullName);
+  }
+  if (typeof payload.email !== 'undefined') {
+    normalized.email = normalizeEmail(payload.email);
+  }
+  if (typeof payload.phone !== 'undefined') {
+    normalized.phone = normalizePhone(payload.phone);
+  }
+
+  return normalized;
+}
 
 function isValidDateString(value) {
   if (!dateRegex.test(value)) {
@@ -116,5 +172,11 @@ module.exports = {
   usersQuerySchema,
   productsQuerySchema,
   reviewCreateSchema,
+  normalizeFullName,
+  normalizeEmail,
+  normalizePhone,
+  normalizeRegisterPayload,
+  normalizeUserLoginPayload,
+  normalizeUserProfileUpdatePayload,
   validate
 };

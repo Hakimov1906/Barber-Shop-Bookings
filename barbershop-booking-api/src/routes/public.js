@@ -12,6 +12,9 @@ const {
   userLoginSchema,
   userProfileUpdateSchema,
   reviewCreateSchema,
+  normalizeRegisterPayload,
+  normalizeUserLoginPayload,
+  normalizeUserProfileUpdatePayload,
   validate
 } = require('../utils/validation');
 
@@ -299,7 +302,8 @@ router.get('/slots', async (req, res, next) => {
   }
 
   try {
-    const params = [data.date];
+    const status = data.status || 'available';
+    const params = [status, data.date];
     let sql = `
       SELECT s.id, s.barber_id, s.date, s.time
       FROM slots s
@@ -308,7 +312,6 @@ router.get('/slots', async (req, res, next) => {
         AND s.date = $2
         AND b.is_active = true
     `;
-    params.unshift('available');
 
     if (data.barberId) {
       params.push(data.barberId);
@@ -325,7 +328,8 @@ router.get('/slots', async (req, res, next) => {
 });
 
 router.post('/auth/register', async (req, res, next) => {
-  const { data, error } = validate(registerSchema, req.body);
+  const normalizedPayload = normalizeRegisterPayload(req.body);
+  const { data, error } = validate(registerSchema, normalizedPayload);
   if (error) {
     return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
   }
@@ -364,7 +368,8 @@ router.post('/auth/register', async (req, res, next) => {
 });
 
 router.post('/auth/login', loginRateLimiter, async (req, res, next) => {
-  const { data, error } = validate(userLoginSchema, req.body);
+  const normalizedPayload = normalizeUserLoginPayload(req.body);
+  const { data, error } = validate(userLoginSchema, normalizedPayload);
   if (error) {
     return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
   }
@@ -521,7 +526,8 @@ router.patch('/users/me', requireAuth, requireRole('user'), async (req, res, nex
     return res.status(401).json({ error: 'Invalid token subject' });
   }
 
-  const { data, error } = validate(userProfileUpdateSchema, req.body);
+  const normalizedPayload = normalizeUserProfileUpdatePayload(req.body);
+  const { data, error } = validate(userProfileUpdateSchema, normalizedPayload);
   if (error) {
     return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
   }
@@ -530,15 +536,15 @@ router.patch('/users/me', requireAuth, requireRole('user'), async (req, res, nex
   const params = [];
 
   if (typeof data.fullName !== 'undefined') {
-    params.push(data.fullName.trim());
+    params.push(data.fullName);
     fields.push(`full_name = $${params.length}`);
   }
   if (typeof data.email !== 'undefined') {
-    params.push(data.email.trim().toLowerCase());
+    params.push(data.email);
     fields.push(`email = $${params.length}`);
   }
   if (typeof data.phone !== 'undefined') {
-    params.push(data.phone.trim());
+    params.push(data.phone);
     fields.push(`phone = $${params.length}`);
   }
 
