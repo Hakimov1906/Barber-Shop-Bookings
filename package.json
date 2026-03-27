@@ -11,7 +11,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "api:types": "openapi-typescript ./barbershop-booking-api/src/docs/openapi.json -o ./src/api/generated/openapi.ts"
+    "api:types": "openapi-typescript ./barbershop-booking-api/src/docs/openapi.json -o ./src/api/generated/openapi.ts",
+    "local:up": "powershell -ExecutionPolicy Bypass -File ./scripts/local-dev.ps1",
+    "local:up:detached": "powershell -ExecutionPolicy Bypass -File ./scripts/local-dev.ps1 -Detached",
+    "local:down": "powershell -ExecutionPolicy Bypass -File ./scripts/local-stop.ps1"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

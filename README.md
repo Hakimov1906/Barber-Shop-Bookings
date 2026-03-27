@@ -15,6 +15,29 @@ Monorepo with:
 
 ## Local Run (Full Stack)
 
+### One-command PowerShell launcher (Windows)
+
+From repo root:
+
+```powershell
+npm run local:up
+```
+
+This command:
+
+1. starts local Postgres in Docker (`barbershop-postgres-local`)
+2. prepares `.env` files
+3. runs backend migrations (+ seed)
+4. generates frontend API types
+5. starts backend and frontend
+
+Useful variants:
+
+```powershell
+npm run local:up:detached   # start both apps in separate terminals
+npm run local:down          # stop/remove local Postgres container
+```
+
 ## 1) Start local Postgres (Docker, PowerShell)
 
 ```powershell
