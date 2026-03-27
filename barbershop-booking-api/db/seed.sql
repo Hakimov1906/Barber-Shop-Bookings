@@ -1,3 +1,54 @@
+INSERT INTO salons (
+  code,
+  name,
+  address,
+  work_hours,
+  latitude,
+  longitude,
+  sort_order
+)
+VALUES
+  (
+    'center',
+    'HairLine Center',
+    'Chuy Ave, 150',
+    '09:00 - 21:00',
+    42.876731,
+    74.606215,
+    1
+  ),
+  (
+    'north',
+    'HairLine North',
+    'Jibek Jolu, 42',
+    '10:00 - 20:00',
+    42.889112,
+    74.628954,
+    2
+  ),
+  (
+    'south',
+    'HairLine South',
+    'Akhunbaev St, 98',
+    '09:00 - 21:00',
+    42.833481,
+    74.602614,
+    3
+  )
+ON CONFLICT (code) DO UPDATE SET
+  name = EXCLUDED.name,
+  address = EXCLUDED.address,
+  work_hours = EXCLUDED.work_hours,
+  latitude = EXCLUDED.latitude,
+  longitude = EXCLUDED.longitude,
+  sort_order = EXCLUDED.sort_order,
+  is_active = TRUE,
+  updated_at = NOW();
+
+UPDATE salons
+SET is_active = FALSE, updated_at = NOW()
+WHERE code NOT IN ('center', 'north', 'south');
+
 INSERT INTO barbers (
   name,
   role,
@@ -7,6 +58,7 @@ INSERT INTO barbers (
   image_url,
   is_available,
   specialties,
+  salon_id,
   location,
   bio
 )
@@ -20,7 +72,8 @@ VALUES
     'https://placehold.co/600x600/png?text=Timur+K',
     TRUE,
     ARRAY['Skin fade', 'Classic cut', 'Beard styling'],
-    'Bishkek, Chuy Ave 120',
+    (SELECT id FROM salons WHERE code = 'center'),
+    'Chuy Ave, 150',
     'Focuses on precision fades and modern men styles.'
   ),
   (
@@ -32,7 +85,8 @@ VALUES
     'https://placehold.co/600x600/png?text=Aida+O',
     TRUE,
     ARRAY['Layered cuts', 'Styling', 'Hair care'],
-    'Bishkek, Toktogul St 88',
+    (SELECT id FROM salons WHERE code = 'center'),
+    'Chuy Ave, 150',
     'Creates soft forms and practical daily styling routines.'
   ),
   (
@@ -44,7 +98,8 @@ VALUES
     'https://placehold.co/600x600/png?text=Nursultan+I',
     TRUE,
     ARRAY['Taper fade', 'Beard trim', 'Contour line'],
-    'Bishkek, Isanova St 45',
+    (SELECT id FROM salons WHERE code = 'north'),
+    'Jibek Jolu, 42',
     'Strong at clean lines and quick, consistent execution.'
   ),
   (
@@ -56,7 +111,8 @@ VALUES
     'https://placehold.co/600x600/png?text=Elena+P',
     TRUE,
     ARRAY['Coloring', 'Balayage', 'Hair recovery'],
-    'Bishkek, Manasa Ave 33',
+    (SELECT id FROM salons WHERE code = 'south'),
+    'Akhunbaev St, 98',
     'Works with natural shades and restorative color techniques.'
   ),
   (
@@ -68,7 +124,8 @@ VALUES
     'https://placehold.co/600x600/png?text=Bekzat+S',
     TRUE,
     ARRAY['Buzz cut', 'Kids haircut', 'Simple styling'],
-    'Bishkek, Kievskaya St 72',
+    (SELECT id FROM salons WHERE code = 'north'),
+    'Jibek Jolu, 42',
     'Fast service and good choice for regular maintenance cuts.'
   ),
   (
@@ -80,7 +137,8 @@ VALUES
     'https://placehold.co/600x600/png?text=Madina+R',
     TRUE,
     ARRAY['Evening styling', 'Texture', 'Volume'],
-    'Bishkek, Abdrakhmanov St 101',
+    (SELECT id FROM salons WHERE code = 'south'),
+    'Akhunbaev St, 98',
     'Builds long-lasting volume and polished final look.'
   )
 ON CONFLICT (name) DO UPDATE SET
@@ -91,6 +149,7 @@ ON CONFLICT (name) DO UPDATE SET
   image_url = EXCLUDED.image_url,
   is_available = EXCLUDED.is_available,
   specialties = EXCLUDED.specialties,
+  salon_id = EXCLUDED.salon_id,
   location = EXCLUDED.location,
   bio = EXCLUDED.bio,
   is_active = TRUE;

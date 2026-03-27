@@ -2,6 +2,7 @@ import { client, HttpApiError, unwrapOpenApiResponse } from "@/api/client";
 import type { components } from "@/api/generated/openapi";
 import { masters } from "@/data/masters";
 import { products as seedProducts } from "@/data/products";
+import { salons as seedSalons } from "@/data/salons";
 import { services as seedServices } from "@/data/services";
 import { API_BASE_URL, USE_MOCK_API } from "@/lib/config";
 
@@ -12,6 +13,7 @@ export type ApiSlot = components["schemas"]["Slot"];
 export type ApiUser = components["schemas"]["UserPublic"];
 export type ApiBookingResponse = components["schemas"]["BookingCreatedResponse"];
 export type ApiReview = components["schemas"]["Review"];
+export type ApiSalon = components["schemas"]["Salon"];
 export interface ApiUserProfileResponse {
   user: ApiUser;
 }
@@ -228,6 +230,23 @@ function fromMockToken(token: string): number | null {
 }
 
 const mockApi = {
+  getSalons: async (): Promise<ApiSalon[]> => {
+    await wait();
+    const now = new Date().toISOString();
+    return seedSalons.map((salon, index) => ({
+      id: Number(salon.id) || index + 1,
+      code: salon.code,
+      name: salon.name,
+      address: salon.address,
+      work_hours: salon.workHours,
+      latitude: salon.latitude,
+      longitude: salon.longitude,
+      is_active: salon.isActive,
+      sort_order: salon.sortOrder,
+      created_at: now,
+      updated_at: now,
+    }));
+  },
   getBarbers: async (): Promise<ApiBarber[]> => {
     await wait();
     return masters.map((master, index) => ({
@@ -573,6 +592,13 @@ const mockApi = {
 };
 
 const realApi = {
+  getSalons: async (): Promise<ApiSalon[]> => {
+    try {
+      return await requestJson<ApiSalon[]>("/api/salons");
+    } catch (error) {
+      return toApiError(error);
+    }
+  },
   getBarbers: async (): Promise<ApiBarber[]> => {
     try {
       return await unwrapOpenApiResponse(client.GET("/api/barbers"));

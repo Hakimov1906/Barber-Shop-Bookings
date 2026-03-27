@@ -8,8 +8,8 @@ type Gender = "all" | "men" | "women";
 
 const Shop = () => {
   const [gender, setGender] = useState<Gender>("all");
-  const { tr } = useI18n();
-  const { products } = useProducts();
+  const { tr, lang } = useI18n();
+  const { products, isLoading, isFallback } = useProducts();
 
   const genderOptions: [Gender, string][] = [
     ["all", tr("shop.all")],
@@ -27,6 +27,15 @@ const Shop = () => {
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
         <h1 className="text-3xl font-semibold">{tr("shop.title")}</h1>
         <p className="mt-2 text-muted-foreground">{tr("shop.subtitle")}</p>
+        {isFallback && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {lang === "en"
+              ? "Fallback data is shown while API is unavailable."
+              : lang === "ru"
+                ? "Показаны резервные данные, пока API недоступно."
+                : "API жеткиликсиз учурда резервдик маалымат көрсөтүлдү."}
+          </p>
+        )}
       </motion.div>
 
       <div className="mt-8 inline-flex rounded-xl bg-secondary p-1">
@@ -46,16 +55,20 @@ const Shop = () => {
       </div>
 
       <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {filtered.map((p, i) => (
-          <motion.div
-            key={p.id}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05, duration: 0.3 }}
-          >
-            <ProductCard product={p} />
-          </motion.div>
-        ))}
+        {isLoading && products.length === 0
+          ? Array.from({ length: 8 }).map((_, index) => (
+              <div key={`products-skeleton-${index}`} className="h-[340px] animate-pulse rounded-2xl bg-secondary/60" />
+            ))
+          : filtered.map((p, i) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.3 }}
+              >
+                <ProductCard product={p} />
+              </motion.div>
+            ))}
       </div>
     </div>
   );

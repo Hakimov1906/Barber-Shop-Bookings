@@ -12,15 +12,19 @@ export function useProducts() {
     retry: 1,
   });
 
+  const hasApiData = Boolean(query.data?.length);
+  const shouldUseFallback = USE_MOCK_API || query.isError || (query.isSuccess && !hasApiData);
+
   const products = useMemo(() => {
-    if (!query.data?.length && USE_MOCK_API) {
+    if (shouldUseFallback) {
       return fallbackProducts;
     }
     return mapApiProductsToProducts(query.data || []);
-  }, [query.data]);
+  }, [query.data, shouldUseFallback]);
 
   return {
     ...query,
     products,
+    isFallback: shouldUseFallback,
   };
 }

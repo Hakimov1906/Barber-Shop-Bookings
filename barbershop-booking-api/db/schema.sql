@@ -1,5 +1,19 @@
 -- Snapshot schema (source of truth for changes lives in db/migrations)
 
+CREATE TABLE IF NOT EXISTS salons (
+  id SERIAL PRIMARY KEY,
+  code TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL UNIQUE,
+  address TEXT NOT NULL,
+  work_hours TEXT NOT NULL DEFAULT '09:00 - 21:00',
+  latitude NUMERIC(9,6) NOT NULL CHECK (latitude >= -90 AND latitude <= 90),
+  longitude NUMERIC(9,6) NOT NULL CHECK (longitude >= -180 AND longitude <= 180),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS barbers (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
@@ -10,6 +24,7 @@ CREATE TABLE IF NOT EXISTS barbers (
   image_url TEXT,
   is_available BOOLEAN NOT NULL DEFAULT TRUE,
   specialties TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+  salon_id INT REFERENCES salons(id) ON DELETE SET NULL,
   location TEXT,
   bio TEXT,
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -23,8 +38,25 @@ ALTER TABLE barbers ADD COLUMN IF NOT EXISTS reviews_count INT NOT NULL DEFAULT 
 ALTER TABLE barbers ADD COLUMN IF NOT EXISTS image_url TEXT;
 ALTER TABLE barbers ADD COLUMN IF NOT EXISTS is_available BOOLEAN NOT NULL DEFAULT TRUE;
 ALTER TABLE barbers ADD COLUMN IF NOT EXISTS specialties TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];
+ALTER TABLE barbers ADD COLUMN IF NOT EXISTS salon_id INT;
 ALTER TABLE barbers ADD COLUMN IF NOT EXISTS location TEXT;
 ALTER TABLE barbers ADD COLUMN IF NOT EXISTS bio TEXT;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'barbers_salon_id_fkey'
+  ) THEN
+    ALTER TABLE barbers
+      ADD CONSTRAINT barbers_salon_id_fkey
+      FOREIGN KEY (salon_id)
+      REFERENCES salons(id)
+      ON DELETE SET NULL;
+  END IF;
+END
+$$;
 
 CREATE TABLE IF NOT EXISTS services (
   id SERIAL PRIMARY KEY,
@@ -58,6 +90,9 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE INDEX IF NOT EXISTS users_email_idx ON users(email);
+CREATE INDEX IF NOT EXISTS salons_active_idx ON salons(is_active);
+CREATE INDEX IF NOT EXISTS salons_sort_order_idx ON salons(sort_order);
+CREATE INDEX IF NOT EXISTS barbers_salon_idx ON barbers(salon_id);
 CREATE UNIQUE INDEX IF NOT EXISTS barbers_name_uidx ON barbers(name);
 CREATE UNIQUE INDEX IF NOT EXISTS services_name_uidx ON services(name);
 CREATE UNIQUE INDEX IF NOT EXISTS products_name_uidx ON products(name);

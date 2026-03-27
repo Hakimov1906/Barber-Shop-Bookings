@@ -1,8 +1,39 @@
 const { pool } = require('./pool');
 
+const salons = [
+  {
+    code: 'center',
+    name: 'HairLine Center',
+    address: 'Chuy Ave, 150',
+    workHours: '09:00 - 21:00',
+    latitude: 42.876731,
+    longitude: 74.606215,
+    sortOrder: 1
+  },
+  {
+    code: 'north',
+    name: 'HairLine North',
+    address: 'Jibek Jolu, 42',
+    workHours: '10:00 - 20:00',
+    latitude: 42.889112,
+    longitude: 74.628954,
+    sortOrder: 2
+  },
+  {
+    code: 'south',
+    name: 'HairLine South',
+    address: 'Akhunbaev St, 98',
+    workHours: '09:00 - 21:00',
+    latitude: 42.833481,
+    longitude: 74.602614,
+    sortOrder: 3
+  }
+];
+
 const barbers = [
   {
     name: 'Timur Karimov',
+    salonCode: 'center',
     role: 'Senior Barber',
     experienceYears: 11,
     rating: 4.9,
@@ -10,12 +41,13 @@ const barbers = [
     imageUrl: 'https://placehold.co/600x600/png?text=Timur+K',
     isAvailable: true,
     specialties: ['Skin fade', 'Classic cut', 'Beard styling'],
-    location: 'Bishkek, Chuy Ave 120',
+    location: 'Chuy Ave, 150',
     bio: 'Focuses on precision fades and modern men styles.',
     isActive: true
   },
   {
     name: 'Aida Omurbekova',
+    salonCode: 'center',
     role: 'Top Stylist',
     experienceYears: 9,
     rating: 4.8,
@@ -23,12 +55,13 @@ const barbers = [
     imageUrl: 'https://placehold.co/600x600/png?text=Aida+O',
     isAvailable: true,
     specialties: ['Layered cuts', 'Styling', 'Hair care'],
-    location: 'Bishkek, Toktogul St 88',
+    location: 'Chuy Ave, 150',
     bio: 'Creates soft forms and practical daily styling routines.',
     isActive: true
   },
   {
     name: 'Nursultan Imanov',
+    salonCode: 'north',
     role: 'Barber',
     experienceYears: 6,
     rating: 4.7,
@@ -36,12 +69,13 @@ const barbers = [
     imageUrl: 'https://placehold.co/600x600/png?text=Nursultan+I',
     isAvailable: true,
     specialties: ['Taper fade', 'Beard trim', 'Contour line'],
-    location: 'Bishkek, Isanova St 45',
+    location: 'Jibek Jolu, 42',
     bio: 'Strong at clean lines and quick, consistent execution.',
     isActive: true
   },
   {
     name: 'Elena Petrova',
+    salonCode: 'south',
     role: 'Color Specialist',
     experienceYears: 12,
     rating: 5.0,
@@ -49,12 +83,13 @@ const barbers = [
     imageUrl: 'https://placehold.co/600x600/png?text=Elena+P',
     isAvailable: true,
     specialties: ['Coloring', 'Balayage', 'Hair recovery'],
-    location: 'Bishkek, Manasa Ave 33',
+    location: 'Akhunbaev St, 98',
     bio: 'Works with natural shades and restorative color techniques.',
     isActive: true
   },
   {
     name: 'Bekzat Sadykov',
+    salonCode: 'north',
     role: 'Barber',
     experienceYears: 4,
     rating: 4.6,
@@ -62,12 +97,13 @@ const barbers = [
     imageUrl: 'https://placehold.co/600x600/png?text=Bekzat+S',
     isAvailable: true,
     specialties: ['Buzz cut', 'Kids haircut', 'Simple styling'],
-    location: 'Bishkek, Kievskaya St 72',
+    location: 'Jibek Jolu, 42',
     bio: 'Fast service and good choice for regular maintenance cuts.',
     isActive: true
   },
   {
     name: 'Madina Ryskulova',
+    salonCode: 'south',
     role: 'Stylist',
     experienceYears: 7,
     rating: 4.8,
@@ -75,7 +111,7 @@ const barbers = [
     imageUrl: 'https://placehold.co/600x600/png?text=Madina+R',
     isAvailable: true,
     specialties: ['Evening styling', 'Texture', 'Volume'],
-    location: 'Bishkek, Abdrakhmanov St 101',
+    location: 'Akhunbaev St, 98',
     bio: 'Builds long-lasting volume and polished final look.',
     isActive: true
   }
@@ -294,18 +330,67 @@ function buildUpcomingDates(days = 14) {
   return dates;
 }
 
-async function upsertBarbers(client) {
+async function upsertSalons(client) {
+  const salonIdByCode = new Map();
+  const codes = salons.map((salon) => salon.code);
+
+  for (const salon of salons) {
+    const result = await client.query(
+      `
+      INSERT INTO salons (
+        code, name, address, work_hours, latitude, longitude, sort_order, is_active, updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, NOW())
+      ON CONFLICT (code) DO UPDATE SET
+        name = EXCLUDED.name,
+        address = EXCLUDED.address,
+        work_hours = EXCLUDED.work_hours,
+        latitude = EXCLUDED.latitude,
+        longitude = EXCLUDED.longitude,
+        sort_order = EXCLUDED.sort_order,
+        is_active = TRUE,
+        updated_at = NOW()
+      RETURNING id, code
+      `,
+      [
+        salon.code,
+        salon.name,
+        salon.address,
+        salon.workHours,
+        salon.latitude,
+        salon.longitude,
+        salon.sortOrder
+      ]
+    );
+
+    salonIdByCode.set(result.rows[0].code, result.rows[0].id);
+  }
+
+  await client.query(
+    `
+    UPDATE salons
+    SET is_active = FALSE, updated_at = NOW()
+    WHERE code <> ALL($1::text[])
+    `,
+    [codes]
+  );
+
+  return salonIdByCode;
+}
+
+async function upsertBarbers(client, salonIdByCode) {
   const barberIdByName = new Map();
   const names = barbers.map((barber) => barber.name);
 
   for (const barber of barbers) {
+    const salonId = salonIdByCode.get(barber.salonCode) || null;
     const result = await client.query(
       `
       INSERT INTO barbers (
-        name, role, experience_years, rating, reviews_count, image_url,
-        is_available, specialties, location, bio, is_active
+        name, role, experience_years, rating, reviews_count, image_url, is_available,
+        specialties, salon_id, location, bio, is_active
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8::text[], $9, $10, $11)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8::text[], $9, $10, $11, $12)
       ON CONFLICT (name) DO UPDATE SET
         role = EXCLUDED.role,
         experience_years = EXCLUDED.experience_years,
@@ -314,6 +399,7 @@ async function upsertBarbers(client) {
         image_url = EXCLUDED.image_url,
         is_available = EXCLUDED.is_available,
         specialties = EXCLUDED.specialties,
+        salon_id = EXCLUDED.salon_id,
         location = EXCLUDED.location,
         bio = EXCLUDED.bio,
         is_active = EXCLUDED.is_active
@@ -328,6 +414,7 @@ async function upsertBarbers(client) {
         barber.imageUrl,
         barber.isAvailable,
         barber.specialties,
+        salonId,
         barber.location,
         barber.bio,
         barber.isActive
@@ -521,7 +608,8 @@ async function refreshSeeds(options = {}) {
       await resetDemoData(client);
     }
 
-    const barberIdByName = await upsertBarbers(client);
+    const salonIdByCode = await upsertSalons(client);
+    const barberIdByName = await upsertBarbers(client, salonIdByCode);
     await upsertServices(client);
     await upsertProducts(client);
     const userIdByEmail = await upsertUsers(client);
@@ -538,4 +626,4 @@ async function refreshSeeds(options = {}) {
   }
 }
 
-module.exports = { refreshSeeds, barbers, services, products, demoUsers, reviewSeeds };
+module.exports = { refreshSeeds, salons, barbers, services, products, demoUsers, reviewSeeds };

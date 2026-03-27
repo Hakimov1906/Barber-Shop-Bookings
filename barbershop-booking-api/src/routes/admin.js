@@ -11,6 +11,9 @@ const {
   slotQuerySchema,
   bookingsQuerySchema,
   usersQuerySchema,
+  salonCreateSchema,
+  salonUpdateSchema,
+  salonsAdminQuerySchema,
   validate
 } = require('../utils/validation');
 
@@ -77,6 +80,177 @@ router.post('/login', adminLoginRateLimiter, async (req, res) => {
 });
 
 router.use(requireAuth, requireRole('admin'));
+
+router.get('/salons', async (req, res, next) => {
+  const { data, error } = validate(salonsAdminQuerySchema, req.query);
+  if (error) {
+    return res.status(400).json({ error: 'Invalid query', details: error.fieldErrors });
+  }
+
+  try {
+    const params = [];
+    let sql = `
+      SELECT
+        id,
+        code,
+        name,
+        address,
+        work_hours,
+        latitude,
+        longitude,
+        is_active,
+        sort_order,
+        created_at,
+        updated_at
+      FROM salons
+      WHERE 1=1
+    `;
+
+    if (!data.includeInactive) {
+      params.push(true);
+      sql += ` AND is_active = $${params.length}`;
+    }
+
+    sql += ' ORDER BY sort_order ASC, id ASC';
+
+    const result = await pool.query(sql, params);
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/salons', async (req, res, next) => {
+  const { data, error } = validate(salonCreateSchema, req.body);
+  if (error) {
+    return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
+  }
+
+  try {
+    const result = await pool.query(
+      `
+      INSERT INTO salons (
+        code, name, address, work_hours, latitude, longitude, sort_order, is_active, updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+      RETURNING
+        id,
+        code,
+        name,
+        address,
+        work_hours,
+        latitude,
+        longitude,
+        is_active,
+        sort_order,
+        created_at,
+        updated_at
+      `,
+      [
+        data.code,
+        data.name,
+        data.address,
+        data.workHours,
+        data.latitude,
+        data.longitude,
+        data.sortOrder || 0,
+        typeof data.isActive === 'boolean' ? data.isActive : true
+      ]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Salon code or name already exists' });
+    }
+    next(err);
+  }
+});
+
+router.patch('/salons/:id', async (req, res, next) => {
+  const salonId = Number(req.params.id);
+  if (!Number.isInteger(salonId) || salonId <= 0) {
+    return res.status(400).json({ error: 'Invalid salon id' });
+  }
+
+  const { data, error } = validate(salonUpdateSchema, req.body);
+  if (error) {
+    return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
+  }
+
+  const fields = [];
+  const params = [];
+
+  if (typeof data.code !== 'undefined') {
+    params.push(data.code);
+    fields.push(`code = $${params.length}`);
+  }
+  if (typeof data.name !== 'undefined') {
+    params.push(data.name);
+    fields.push(`name = $${params.length}`);
+  }
+  if (typeof data.address !== 'undefined') {
+    params.push(data.address);
+    fields.push(`address = $${params.length}`);
+  }
+  if (typeof data.workHours !== 'undefined') {
+    params.push(data.workHours);
+    fields.push(`work_hours = $${params.length}`);
+  }
+  if (typeof data.latitude !== 'undefined') {
+    params.push(data.latitude);
+    fields.push(`latitude = $${params.length}`);
+  }
+  if (typeof data.longitude !== 'undefined') {
+    params.push(data.longitude);
+    fields.push(`longitude = $${params.length}`);
+  }
+  if (typeof data.sortOrder !== 'undefined') {
+    params.push(data.sortOrder);
+    fields.push(`sort_order = $${params.length}`);
+  }
+  if (typeof data.isActive !== 'undefined') {
+    params.push(data.isActive);
+    fields.push(`is_active = $${params.length}`);
+  }
+
+  fields.push('updated_at = NOW()');
+  params.push(salonId);
+
+  try {
+    const result = await pool.query(
+      `
+      UPDATE salons
+      SET ${fields.join(', ')}
+      WHERE id = $${params.length}
+      RETURNING
+        id,
+        code,
+        name,
+        address,
+        work_hours,
+        latitude,
+        longitude,
+        is_active,
+        sort_order,
+        created_at,
+        updated_at
+      `,
+      params
+    );
+
+    if (!result.rowCount) {
+      return res.status(404).json({ error: 'Salon not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Salon code or name already exists' });
+    }
+    next(err);
+  }
+});
 
 router.get('/bookings', async (req, res, next) => {
   const { data, error } = validate(bookingsQuerySchema, req.query);
@@ -215,7 +389,14 @@ router.post('/slots', async (req, res, next) => {
     await client.query('BEGIN');
 
     const barberRes = await client.query(
-      'SELECT id FROM barbers WHERE id = $1 AND is_active = true',
+      `
+      SELECT b.id
+      FROM barbers b
+      LEFT JOIN salons s ON s.id = b.salon_id
+      WHERE b.id = $1
+        AND b.is_active = true
+        AND (b.salon_id IS NULL OR s.is_active = true)
+      `,
       [data.barberId]
     );
     if (!barberRes.rowCount) {

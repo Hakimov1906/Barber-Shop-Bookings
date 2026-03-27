@@ -39,27 +39,57 @@ router.get('/ready', async (req, res) => {
   }
 });
 
-router.get('/barbers', async (req, res, next) => {
+router.get('/salons', async (req, res, next) => {
   try {
     const result = await pool.query(
       `
       SELECT
         id,
+        code,
         name,
-        role,
-        experience_years,
-        rating,
-        reviews_count,
-        image_url,
-        is_available,
-        specialties,
-        location,
-        bio,
+        address,
+        work_hours,
+        latitude,
+        longitude,
         is_active,
-        created_at
-      FROM barbers
+        sort_order,
+        created_at,
+        updated_at
+      FROM salons
       WHERE is_active = true
-      ORDER BY name
+      ORDER BY sort_order ASC, id ASC
+      `
+    );
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/barbers', async (req, res, next) => {
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        b.id,
+        b.name,
+        b.role,
+        b.experience_years,
+        b.rating,
+        b.reviews_count,
+        b.image_url,
+        b.is_available,
+        b.specialties,
+        b.salon_id,
+        COALESCE(s.address, b.location) AS location,
+        b.bio,
+        b.is_active,
+        b.created_at
+      FROM barbers b
+      LEFT JOIN salons s ON s.id = b.salon_id AND s.is_active = true
+      WHERE b.is_active = true
+        AND (b.salon_id IS NULL OR s.id IS NOT NULL)
+      ORDER BY b.name
       `
     );
     res.json(result.rows);
@@ -308,9 +338,11 @@ router.get('/slots', async (req, res, next) => {
       SELECT s.id, s.barber_id, s.date, s.time
       FROM slots s
       JOIN barbers b ON b.id = s.barber_id
+      LEFT JOIN salons sl ON sl.id = b.salon_id AND sl.is_active = true
       WHERE s.status = $1
         AND s.date = $2
         AND b.is_active = true
+        AND (b.salon_id IS NULL OR sl.id IS NOT NULL)
     `;
 
     if (data.barberId) {
@@ -608,7 +640,14 @@ router.post('/bookings', requireAuth, requireRole('user'), async (req, res, next
     }
 
     const barberRes = await client.query(
-      'SELECT id FROM barbers WHERE id = $1 AND is_active = true',
+      `
+      SELECT b.id
+      FROM barbers b
+      LEFT JOIN salons s ON s.id = b.salon_id
+      WHERE b.id = $1
+        AND b.is_active = true
+        AND (b.salon_id IS NULL OR s.is_active = true)
+      `,
       [data.barberId]
     );
     if (!barberRes.rowCount) {

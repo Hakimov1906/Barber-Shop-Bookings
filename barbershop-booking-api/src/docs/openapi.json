@@ -286,6 +286,10 @@
           "created_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "salon_id": {
+            "type": "integer",
+            "nullable": true
           }
         }
       },
@@ -754,6 +758,59 @@
             "$ref": "#/components/schemas/UserPublicSnake"
           }
         }
+      },
+      "Salon": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "work_hours": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "sort_order": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "address",
+          "work_hours",
+          "latitude",
+          "longitude",
+          "is_active",
+          "sort_order",
+          "created_at",
+          "updated_at"
+        ]
       }
     }
   },
@@ -928,7 +985,11 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["available", "booked", "blocked"]
+              "enum": [
+                "available",
+                "booked",
+                "blocked"
+              ]
             }
           }
         ],
@@ -1586,8 +1647,8 @@
           }
         },
         "responses": {
-          "201": {
-            "description": "Review created",
+          "200": {
+            "description": "Review updated",
             "content": {
               "application/json": {
                 "schema": {
@@ -1596,8 +1657,8 @@
               }
             }
           },
-          "200": {
-            "description": "Review updated",
+          "201": {
+            "description": "Review created",
             "content": {
               "application/json": {
                 "schema": {
@@ -1855,6 +1916,29 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/salons": {
+      "get": {
+        "summary": "List active salons",
+        "tags": [
+          "Public"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Salon"
+                  }
                 }
               }
             }

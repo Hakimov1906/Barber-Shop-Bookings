@@ -4,14 +4,7 @@ import "leaflet/dist/leaflet.css";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
-
-export type SalonMapLocation = {
-  id: string;
-  name: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-};
+import type { Salon } from "@/data/salons";
 
 let markerIconsConfigured = false;
 
@@ -28,7 +21,7 @@ function ensureMarkerIconsConfigured() {
   markerIconsConfigured = true;
 }
 
-const SalonsMap = ({ locations }: { locations: SalonMapLocation[] }) => {
+const SalonsMap = ({ locations }: { locations: Salon[] }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -66,6 +59,14 @@ const SalonsMap = ({ locations }: { locations: SalonMapLocation[] }) => {
       map.remove();
     };
   }, [locations]);
+
+  if (!locations.length) {
+    return (
+      <div className="flex h-[320px] items-center justify-center rounded-2xl border border-dashed border-border bg-card text-sm text-muted-foreground sm:h-[360px]">
+        Нет координат для отображения на карте
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card card-shadow">

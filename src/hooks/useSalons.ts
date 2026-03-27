@@ -1,30 +1,30 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { mapBarbersToMasters } from "@/lib/masters";
-import { masters as fallbackMasters } from "@/data/masters";
+import { mapApiSalonsToSalons } from "@/lib/salons";
+import { salons as fallbackSalons } from "@/data/salons";
 import { USE_MOCK_API } from "@/lib/config";
 
-export function useMasters() {
+export function useSalons() {
   const query = useQuery({
-    queryKey: ["barbers"],
-    queryFn: api.getBarbers,
+    queryKey: ["salons"],
+    queryFn: api.getSalons,
     retry: 1,
   });
 
   const hasApiData = Boolean(query.data?.length);
   const shouldUseFallback = USE_MOCK_API || query.isError || (query.isSuccess && !hasApiData);
 
-  const masters = useMemo(() => {
+  const salons = useMemo(() => {
     if (shouldUseFallback) {
-      return fallbackMasters;
+      return fallbackSalons;
     }
-    return mapBarbersToMasters(query.data || []);
+    return mapApiSalonsToSalons(query.data || []);
   }, [query.data, shouldUseFallback]);
 
   return {
     ...query,
-    masters,
+    salons,
     isFallback: shouldUseFallback,
   };
 }

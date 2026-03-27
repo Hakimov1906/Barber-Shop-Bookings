@@ -152,6 +152,49 @@ const productsQuerySchema = z.object({
   type: z.string().min(1).max(60).optional()
 });
 
+const salonCodeSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9][a-z0-9_-]{1,49}$/, 'Invalid salon code');
+
+const salonCreateSchema = z.object({
+  code: salonCodeSchema,
+  name: z.string().trim().min(2).max(120),
+  address: z.string().trim().min(3).max(240),
+  workHours: z.string().trim().min(5).max(60),
+  latitude: z.coerce.number().gte(-90).lte(90),
+  longitude: z.coerce.number().gte(-180).lte(180),
+  sortOrder: z.coerce.number().int().min(0).max(100000).optional(),
+  isActive: z.coerce.boolean().optional()
+});
+
+const salonUpdateSchema = z
+  .object({
+    code: salonCodeSchema.optional(),
+    name: z.string().trim().min(2).max(120).optional(),
+    address: z.string().trim().min(3).max(240).optional(),
+    workHours: z.string().trim().min(5).max(60).optional(),
+    latitude: z.coerce.number().gte(-90).lte(90).optional(),
+    longitude: z.coerce.number().gte(-180).lte(180).optional(),
+    sortOrder: z.coerce.number().int().min(0).max(100000).optional(),
+    isActive: z.coerce.boolean().optional()
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'At least one field is required'
+  });
+
+const salonsAdminQuerySchema = z.object({
+  includeInactive: z
+    .union([z.boolean(), z.string()])
+    .optional()
+    .transform((value) => {
+      if (typeof value === 'boolean') return value;
+      if (typeof value === 'string') return value.toLowerCase() === 'true';
+      return false;
+    })
+});
+
 function validate(schema, data) {
   const result = schema.safeParse(data);
   if (result.success) {
@@ -171,6 +214,9 @@ module.exports = {
   bookingsQuerySchema,
   usersQuerySchema,
   productsQuerySchema,
+  salonCreateSchema,
+  salonUpdateSchema,
+  salonsAdminQuerySchema,
   reviewCreateSchema,
   normalizeFullName,
   normalizeEmail,
