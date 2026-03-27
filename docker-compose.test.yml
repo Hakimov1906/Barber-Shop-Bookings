@@ -1,0 +1,16 @@
+services:
+  postgres-test:
+    image: postgres:15
+    container_name: barbershop-postgres-test
+    environment:
+      POSTGRES_DB: barbershop_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d barbershop_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s

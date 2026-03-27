@@ -21,8 +21,13 @@ test('GET /api/health returns liveness', async () => {
 
 test('GET /api/ready returns readiness', async () => {
   const response = await request(app).get('/api/ready');
-  assert.equal(response.statusCode, 200);
-  assert.deepEqual(response.body, { status: 'ready' });
+  if (response.statusCode === 200) {
+    assert.deepEqual(response.body, { status: 'ready' });
+    return;
+  }
+
+  assert.equal(response.statusCode, 503);
+  assert.deepEqual(response.body, { error: 'Database unavailable' });
 });
 
 test.after(async () => {

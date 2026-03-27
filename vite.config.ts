@@ -48,4 +48,21 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) {
+            return undefined;
+          }
+
+          if (id.includes("framer-motion")) return "vendor-motion";
+          if (id.includes("leaflet")) return "vendor-maps";
+          if (id.includes("recharts")) return "vendor-charts";
+          if (id.includes("@radix-ui")) return "vendor-radix";
+          return undefined;
+        },
+      },
+    },
+  },
 }));

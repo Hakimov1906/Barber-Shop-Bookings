@@ -12,7 +12,8 @@
     "migrate:create": "node-pg-migrate create -m db/migrations",
     "test:smoke": "node --test tests/smoke.test.js",
     "test:integration": "node --test tests/integration.test.js",
-    "test": "npm run test:smoke && npm run test:integration"
+    "test": "npm run test:smoke && npm run test:integration",
+    "test:ci": "npm run migrate:up && npm run seed:refresh && npm test"
   },
   "keywords": [],
   "author": "",

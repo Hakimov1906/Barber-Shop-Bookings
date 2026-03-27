@@ -127,7 +127,7 @@ const BookingDialog = ({ master, open, onOpenChange }: BookingDialogProps) => {
         <DialogHeader>
           <DialogTitle>{tr("booking.title")}</DialogTitle>
           <DialogDescription>
-            {master.name} • {tv("role", master.role)}
+            {master.name} - {tv("role", master.role)}
           </DialogDescription>
         </DialogHeader>
 

@@ -41,22 +41,8 @@ jobs:
   backend:
     name: Backend (migrate/seed/smoke/integration)
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: barbershop_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d barbershop_test"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 15
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/barbershop_test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5433/barbershop_test
       PGSSL: "false"
       JWT_SECRET: ci-jwt-secret
       ADMIN_USER: admin_user
@@ -72,17 +58,30 @@ jobs:
           cache: npm
           cache-dependency-path: barbershop-booking-api/package-lock.json
 
+      - name: Start test Postgres via Docker Compose
+        run: docker compose -f docker-compose.test.yml up -d
+
+      - name: Wait for Postgres healthcheck
+        run: |
+          for i in {1..30}; do
+            STATUS="$(docker inspect --format='{{json .State.Health.Status}}' barbershop-postgres-test || true)"
+            if [ "$STATUS" = "\"healthy\"" ]; then
+              echo "Postgres is healthy"
+              exit 0
+            fi
+            echo "Waiting for Postgres... attempt $i"
+            sleep 2
+          done
+          echo "Postgres did not become healthy in time"
+          docker compose -f docker-compose.test.yml logs postgres-test
+          exit 1
+
       - name: Install backend dependencies
         run: npm ci --prefix barbershop-booking-api
 
-      - name: Run migrations
-        run: npm run migrate:up --prefix barbershop-booking-api
+      - name: Run backend CI test pipeline
+        run: npm run test:ci --prefix barbershop-booking-api
 
-      - name: Seed database
-        run: npm run seed:refresh --prefix barbershop-booking-api
-
-      - name: Smoke tests
-        run: npm run test:smoke --prefix barbershop-booking-api
-
-      - name: Integration tests
-        run: npm run test:integration --prefix barbershop-booking-api
+      - name: Stop test Postgres
+        if: always()
+        run: docker compose -f docker-compose.test.yml down -v
