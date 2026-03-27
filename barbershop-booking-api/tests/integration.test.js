@@ -29,6 +29,7 @@ let userToken = '';
 let adminToken = '';
 let barberId = null;
 let serviceId = null;
+let bookingId = null;
 
 test.before(async () => {
   const barberResult = await pool.query(
@@ -101,6 +102,7 @@ test('register, login and create booking flow', async () => {
 
   assert.equal(bookingResponse.statusCode, 201);
   assert.ok(Number.isInteger(bookingResponse.body.id));
+  bookingId = bookingResponse.body.id;
 
   const secondBookingResponse = await request(app)
     .post('/api/bookings')
@@ -149,6 +151,48 @@ test('user can create and update own barber review', async () => {
   assert.equal(
     Number(targetBarber.reviews_count),
     Number(updateReviewResponse.body.barber.reviews_count)
+  );
+});
+
+test('user can view profile, list own bookings and cancel booking', async () => {
+  const profileResponse = await request(app)
+    .get('/api/users/me')
+    .set('Authorization', `Bearer ${userToken}`);
+
+  assert.equal(profileResponse.statusCode, 200);
+  assert.equal(profileResponse.body.email, email);
+
+  const updateResponse = await request(app)
+    .patch('/api/users/me')
+    .set('Authorization', `Bearer ${userToken}`)
+    .send({
+      fullName: 'Integration User Updated'
+    });
+
+  assert.equal(updateResponse.statusCode, 200);
+  assert.equal(updateResponse.body.user.full_name, 'Integration User Updated');
+
+  const bookingsResponse = await request(app)
+    .get('/api/bookings/me')
+    .set('Authorization', `Bearer ${userToken}`);
+
+  assert.equal(bookingsResponse.statusCode, 200);
+  assert.ok(Array.isArray(bookingsResponse.body));
+  assert.ok(bookingsResponse.body.some((booking) => booking.id === bookingId));
+
+  const cancelResponse = await request(app)
+    .delete(`/api/bookings/${bookingId}`)
+    .set('Authorization', `Bearer ${userToken}`);
+
+  assert.equal(cancelResponse.statusCode, 200);
+
+  const bookingsAfterCancelResponse = await request(app)
+    .get('/api/bookings/me')
+    .set('Authorization', `Bearer ${userToken}`);
+
+  assert.equal(bookingsAfterCancelResponse.statusCode, 200);
+  assert.ok(
+    !bookingsAfterCancelResponse.body.some((booking) => booking.id === bookingId)
   );
 });
 

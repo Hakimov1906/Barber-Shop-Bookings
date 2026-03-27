@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { LogOut, User, Mail, Phone } from "lucide-react";
+import { LogOut, User, Mail, Phone, ListChecks, Settings } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 
@@ -51,6 +51,37 @@ const Profile = () => {
         </div>
 
         <div className="mt-8 grid gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Link
+              to="/profile/orders"
+              className="rounded-2xl bg-card p-6 card-shadow transition-transform hover:-translate-y-0.5"
+            >
+              <div className="flex items-center gap-3">
+                <ListChecks className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">{tr("profile.orders.title")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {tr("profile.orders.subtitle")}
+                  </p>
+                </div>
+              </div>
+            </Link>
+            <Link
+              to="/profile/settings"
+              className="rounded-2xl bg-card p-6 card-shadow transition-transform hover:-translate-y-0.5"
+            >
+              <div className="flex items-center gap-3">
+                <Settings className="h-5 w-5 text-muted-foreground" />
+                <div>
+                  <p className="text-sm font-medium">{tr("profile.settings.title")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {tr("profile.settings.subtitle")}
+                  </p>
+                </div>
+              </div>
+            </Link>
+          </div>
+
           <div className="rounded-2xl bg-card p-6 card-shadow">
             <div className="flex items-center gap-3">
               <User className="h-5 w-5 text-muted-foreground" />

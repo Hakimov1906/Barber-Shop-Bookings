@@ -58,6 +58,16 @@ const userLoginSchema = z.object({
   password: z.string().min(1)
 });
 
+const userProfileUpdateSchema = z
+  .object({
+    fullName: z.string().min(2).max(120).optional(),
+    email: z.string().email().optional(),
+    phone: z.string().regex(phoneRegex, 'Invalid phone number').optional()
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'At least one field is required'
+  });
+
 const slotCreateSchema = z.object({
   barberId: z.coerce.number().int().positive(),
   date: dateStringSchema,
@@ -99,6 +109,7 @@ module.exports = {
   loginSchema,
   registerSchema,
   userLoginSchema,
+  userProfileUpdateSchema,
   slotCreateSchema,
   slotQuerySchema,
   bookingsQuerySchema,

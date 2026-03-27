@@ -31,6 +31,7 @@ interface AuthContextValue {
     phone: string;
     password: string;
   }) => Promise<void>;
+  syncUser: (user: AuthUser) => void;
   logout: () => void;
 }
 
@@ -90,6 +91,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     [login],
   );
 
+  const syncUser = useCallback(
+    (nextUser: AuthUser) => {
+      if (!state?.token) {
+        return;
+      }
+      persist({
+        token: state.token,
+        user: nextUser,
+      });
+    },
+    [persist, state],
+  );
+
   const logout = useCallback(() => {
     persist(null);
   }, [persist]);
@@ -101,9 +115,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       isAuthenticated: Boolean(state?.token),
       login,
       register,
+      syncUser,
       logout,
     }),
-    [state, login, register, logout],
+    [state, login, register, syncUser, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -116,4 +131,3 @@ export function useAuth() {
   }
   return context;
 }
-

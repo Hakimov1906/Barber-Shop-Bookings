@@ -6,17 +6,23 @@ import { useMasters } from "@/hooks/useMasters";
 
 function normalizeRole(value: string) {
   const source = value.trim().toLowerCase();
-  if (source === "barber" || source === "барбер") return "barber";
-  if (source === "stylist" || source === "стилист") return "stylist";
-  if (source === "colorist" || source === "колорист") return "colorist";
+  if (source.includes("barber")) return "barber";
+  if (source.includes("stylist")) return "stylist";
+  if (source.includes("color")) return "colorist";
   return source;
 }
 
 function normalizeLocation(value: string) {
   const source = value.trim().toLowerCase();
-  if (source === "center" || source === "центр" || source === "борбор") return "center";
-  if (source === "north" || source === "север" || source === "түндүк") return "north";
-  if (source === "south" || source === "юг" || source === "түштүк") return "south";
+  if (source.includes("center") || source.includes("chuy") || source.includes("toktogul")) {
+    return "center";
+  }
+  if (source.includes("north") || source.includes("kiev") || source.includes("abdrakhmanov")) {
+    return "north";
+  }
+  if (source.includes("south") || source.includes("manasa") || source.includes("isanova")) {
+    return "south";
+  }
   return source;
 }
 

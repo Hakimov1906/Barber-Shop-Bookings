@@ -3,7 +3,7 @@ import type { components } from "@/api/generated/openapi";
 import { masters } from "@/data/masters";
 import { products as seedProducts } from "@/data/products";
 import { services as seedServices } from "@/data/services";
-import { USE_MOCK_API } from "@/lib/config";
+import { API_BASE_URL, USE_MOCK_API } from "@/lib/config";
 
 export type ApiBarber = components["schemas"]["Barber"];
 export type ApiService = components["schemas"]["Service"];
@@ -12,6 +12,20 @@ export type ApiSlot = components["schemas"]["Slot"];
 export type ApiUser = components["schemas"]["UserPublic"];
 export type ApiBookingResponse = components["schemas"]["BookingCreatedResponse"];
 export type ApiReview = components["schemas"]["Review"];
+export interface ApiUserProfileResponse {
+  user: ApiUser;
+}
+export interface ApiMyBooking {
+  id: number;
+  service_id: number;
+  service_name: string;
+  service_price: string;
+  barber_id: number;
+  barber_name: string;
+  date: string;
+  time: string;
+  created_at: string;
+}
 type RegisterResponse = components["schemas"]["RegisterResponse"];
 type LoginResponse = components["schemas"]["UserLoginResponse"];
 type RegisterRequest = components["schemas"]["RegisterRequest"];
@@ -19,6 +33,11 @@ type LoginRequest = components["schemas"]["UserLoginRequest"];
 type BookingRequest = components["schemas"]["BookingRequest"];
 type ReviewCreateRequest = components["schemas"]["ReviewCreateRequest"];
 type ReviewCreateResponse = components["schemas"]["ReviewCreateResponse"];
+type UpdateProfileRequest = {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+};
 
 interface MockUserRecord {
   id: number;
@@ -26,6 +45,7 @@ interface MockUserRecord {
   email: string;
   phone: string;
   password: string;
+  createdAt: string;
 }
 
 interface MockBookingRecord {
@@ -83,6 +103,32 @@ function toApiError(error: unknown): never {
     throw new ApiError(error.message, error.status);
   }
   throw error;
+}
+
+async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const headers = new Headers(init.headers);
+  if (init.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...init,
+    headers,
+  });
+
+  const payload = await response.json().catch(() => undefined);
+  if (!response.ok) {
+    const message =
+      typeof payload === "object" &&
+      payload !== null &&
+      "error" in payload &&
+      typeof (payload as { error?: unknown }).error === "string"
+        ? String((payload as { error: string }).error)
+        : `Request failed with status ${response.status}`;
+    throw new ApiError(message, response.status);
+  }
+
+  return payload as T;
 }
 
 const wait = (ms = 200) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -252,12 +298,14 @@ const mockApi = {
     }
 
     const nextId = users.reduce((max, user) => Math.max(max, user.id), 0) + 1;
+    const createdAt = new Date().toISOString();
     const created: MockUserRecord = {
       id: nextId,
       fullName: body.fullName.trim(),
       email,
       phone,
       password: body.password,
+      createdAt,
     };
     users.push(created);
     saveMockUsers(users);
@@ -268,7 +316,7 @@ const mockApi = {
         full_name: created.fullName,
         email: created.email,
         phone: created.phone,
-        created_at: new Date().toISOString(),
+        created_at: created.createdAt,
       },
     };
   },
@@ -328,6 +376,107 @@ const mockApi = {
     saveMockBookings(bookings);
 
     return { id: nextId, createdAt };
+  },
+  getMyBookings: async (token: string): Promise<ApiMyBooking[]> => {
+    await wait();
+    const userId = fromMockToken(token);
+    if (!userId) {
+      throw new ApiError("Invalid token", 401);
+    }
+
+    const bookings = loadMockBookings()
+      .filter((booking) => booking.userId === userId)
+      .sort(
+        (a, b) =>
+          Date.parse(`${b.date}T${b.time}:00`) - Date.parse(`${a.date}T${a.time}:00`),
+      );
+
+    return bookings.map((booking) => {
+      const service = seedServices.find(
+        (_, index) => index + 1 === booking.serviceId,
+      );
+      const barber = masters.find((master) => Number(master.id) === booking.barberId);
+      return {
+        id: booking.id,
+        service_id: booking.serviceId,
+        service_name: service?.name ?? `Service #${booking.serviceId}`,
+        service_price: String(service?.price ?? 0),
+        barber_id: booking.barberId,
+        barber_name: barber?.name ?? `Barber #${booking.barberId}`,
+        date: booking.date,
+        time: `${booking.time.slice(0, 5)}:00`,
+        created_at: booking.createdAt,
+      };
+    });
+  },
+  cancelBooking: async (token: string, bookingId: number): Promise<{ status: string }> => {
+    await wait();
+    const userId = fromMockToken(token);
+    if (!userId) {
+      throw new ApiError("Invalid token", 401);
+    }
+
+    const bookings = loadMockBookings();
+    const index = bookings.findIndex(
+      (booking) => booking.id === bookingId && booking.userId === userId,
+    );
+    if (index === -1) {
+      throw new ApiError("Booking not found", 404);
+    }
+
+    bookings.splice(index, 1);
+    saveMockBookings(bookings);
+    return { status: "cancelled" };
+  },
+  updateProfile: async (
+    token: string,
+    body: UpdateProfileRequest,
+  ): Promise<ApiUserProfileResponse> => {
+    await wait();
+    const userId = fromMockToken(token);
+    if (!userId) {
+      throw new ApiError("Invalid token", 401);
+    }
+
+    const users = loadMockUsers();
+    const target = users.find((user) => user.id === userId);
+    if (!target) {
+      throw new ApiError("User not found", 404);
+    }
+
+    const email = body.email?.trim().toLowerCase();
+    const phone = body.phone?.trim();
+
+    if (
+      email &&
+      users.some((user) => user.id !== userId && user.email.toLowerCase() === email)
+    ) {
+      throw new ApiError("Email or phone already in use", 409);
+    }
+    if (phone && users.some((user) => user.id !== userId && user.phone === phone)) {
+      throw new ApiError("Email or phone already in use", 409);
+    }
+
+    if (body.fullName) {
+      target.fullName = body.fullName.trim();
+    }
+    if (email) {
+      target.email = email;
+    }
+    if (phone) {
+      target.phone = phone;
+    }
+
+    saveMockUsers(users);
+    return {
+      user: {
+        id: target.id,
+        full_name: target.fullName,
+        email: target.email,
+        phone: target.phone,
+        created_at: target.createdAt ?? new Date().toISOString(),
+      },
+    };
   },
   getBarberReviews: async (barberId: number): Promise<ApiReview[]> => {
     await wait();
@@ -496,6 +645,49 @@ const realApi = {
           },
         }),
       );
+    } catch (error) {
+      return toApiError(error);
+    }
+  },
+  getMyBookings: async (token: string): Promise<ApiMyBooking[]> => {
+    try {
+      return await requestJson<ApiMyBooking[]>("/api/bookings/me", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      return toApiError(error);
+    }
+  },
+  cancelBooking: async (
+    token: string,
+    bookingId: number,
+  ): Promise<{ status: string }> => {
+    try {
+      return await requestJson<{ status: string }>(`/api/bookings/${bookingId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      return toApiError(error);
+    }
+  },
+  updateProfile: async (
+    token: string,
+    body: UpdateProfileRequest,
+  ): Promise<ApiUserProfileResponse> => {
+    try {
+      return await requestJson<ApiUserProfileResponse>("/api/users/me", {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
     } catch (error) {
       return toApiError(error);
     }

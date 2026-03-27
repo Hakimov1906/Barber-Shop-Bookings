@@ -10,6 +10,7 @@ const {
   productsQuerySchema,
   registerSchema,
   userLoginSchema,
+  userProfileUpdateSchema,
   reviewCreateSchema,
   validate
 } = require('../utils/validation');
@@ -402,6 +403,167 @@ router.post('/auth/login', loginRateLimiter, async (req, res, next) => {
       }
     });
   } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/bookings/me', requireAuth, requireRole('user'), async (req, res, next) => {
+  const userId = Number(req.user.sub);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(401).json({ error: 'Invalid token subject' });
+  }
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        b.id,
+        b.service_id,
+        s.name AS service_name,
+        s.price AS service_price,
+        b.barber_id,
+        br.name AS barber_name,
+        TO_CHAR(b.date, 'YYYY-MM-DD') AS date,
+        TO_CHAR(b.time, 'HH24:MI:SS') AS time,
+        b.created_at
+      FROM bookings b
+      JOIN services s ON s.id = b.service_id
+      JOIN barbers br ON br.id = b.barber_id
+      WHERE b.user_id = $1
+      ORDER BY b.date DESC, b.time DESC, b.id DESC
+      `,
+      [userId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/bookings/:id', requireAuth, requireRole('user'), async (req, res, next) => {
+  const userId = Number(req.user.sub);
+  const bookingId = Number(req.params.id);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(401).json({ error: 'Invalid token subject' });
+  }
+  if (!Number.isInteger(bookingId) || bookingId <= 0) {
+    return res.status(400).json({ error: 'Invalid booking id' });
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const bookingRes = await client.query(
+      `
+      SELECT id, slot_id
+      FROM bookings
+      WHERE id = $1 AND user_id = $2
+      FOR UPDATE
+      `,
+      [bookingId, userId]
+    );
+
+    if (!bookingRes.rowCount) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    await client.query(
+      'DELETE FROM bookings WHERE id = $1 AND user_id = $2',
+      [bookingId, userId]
+    );
+    await client.query('UPDATE slots SET status = $1 WHERE id = $2', [
+      'available',
+      bookingRes.rows[0].slot_id
+    ]);
+
+    await client.query('COMMIT');
+    res.json({ status: 'cancelled' });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    next(err);
+  } finally {
+    client.release();
+  }
+});
+
+router.get('/users/me', requireAuth, requireRole('user'), async (req, res, next) => {
+  const userId = Number(req.user.sub);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(401).json({ error: 'Invalid token subject' });
+  }
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT id, full_name, email, phone, created_at
+      FROM users
+      WHERE id = $1
+      `,
+      [userId]
+    );
+
+    if (!result.rowCount) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/users/me', requireAuth, requireRole('user'), async (req, res, next) => {
+  const userId = Number(req.user.sub);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(401).json({ error: 'Invalid token subject' });
+  }
+
+  const { data, error } = validate(userProfileUpdateSchema, req.body);
+  if (error) {
+    return res.status(400).json({ error: 'Invalid payload', details: error.fieldErrors });
+  }
+
+  const fields = [];
+  const params = [];
+
+  if (typeof data.fullName !== 'undefined') {
+    params.push(data.fullName.trim());
+    fields.push(`full_name = $${params.length}`);
+  }
+  if (typeof data.email !== 'undefined') {
+    params.push(data.email.trim().toLowerCase());
+    fields.push(`email = $${params.length}`);
+  }
+  if (typeof data.phone !== 'undefined') {
+    params.push(data.phone.trim());
+    fields.push(`phone = $${params.length}`);
+  }
+
+  params.push(userId);
+
+  try {
+    const result = await pool.query(
+      `
+      UPDATE users
+      SET ${fields.join(', ')}
+      WHERE id = $${params.length}
+      RETURNING id, full_name, email, phone, created_at
+      `,
+      params
+    );
+
+    if (!result.rowCount) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ user: result.rows[0] });
+  } catch (err) {
+    if (err.code === '23505') {
+      return res.status(409).json({ error: 'Email or phone already in use' });
+    }
     next(err);
   }
 });

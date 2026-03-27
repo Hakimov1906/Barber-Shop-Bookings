@@ -12,6 +12,8 @@ import MasterDetail from "./pages/MasterDetail";
 import Shop from "./pages/Shop";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import ProfileOrders from "./pages/ProfileOrders";
+import ProfileSettings from "./pages/ProfileSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +34,8 @@ const App = () => (
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/profile/orders" element={<ProfileOrders />} />
+                <Route path="/profile/settings" element={<ProfileSettings />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
