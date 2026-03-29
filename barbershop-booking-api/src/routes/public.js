@@ -685,7 +685,15 @@ router.post('/bookings', requireAuth, requireRole('user'), async (req, res, next
     }
 
     const slotRes = await client.query(
-      'SELECT id FROM slots WHERE barber_id = $1 AND date = $2 AND time = $3 AND status = $4 FOR UPDATE',
+      `
+      SELECT id
+      FROM slots
+      WHERE barber_id = $1
+        AND date = $2
+        AND date_trunc('minute', time) = date_trunc('minute', $3::time)
+        AND status = $4
+      FOR UPDATE
+      `,
       [data.barberId, data.date, data.time, 'available']
     );
 
