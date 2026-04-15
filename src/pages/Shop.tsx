@@ -63,19 +63,19 @@ const Shop = () => {
 
         {!isLoading && isError && (
           <div className="surface-card col-span-full p-6 text-center">
-            <p className="text-sm text-muted-foreground">Could not load products.</p>
+            <p className="text-sm text-muted-foreground">{tr("shop.error.load")}</p>
             <button
               className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
               onClick={() => refetch()}
             >
-              Retry
+              {tr("common.retry")}
             </button>
           </div>
         )}
 
         {!isLoading && !isError && filtered.length === 0 && (
           <div className="surface-card col-span-full p-6 text-center">
-            <p className="text-sm text-muted-foreground">No products available.</p>
+            <p className="text-sm text-muted-foreground">{tr("shop.empty")}</p>
           </div>
         )}
 

@@ -3,11 +3,10 @@ import { motion } from "framer-motion";
 import { ArrowRight, Clock, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-barber.jpg";
-import MasterCard from "@/components/MasterCard";
-import ProductCard from "@/components/ProductCard";
-import SalonsMap from "@/components/SalonsMap";
-import { useMasters } from "@/hooks/useMasters";
-import { useProducts } from "@/hooks/useProducts";
+import gallery1 from "@/assets/portfolio-1.jpg";
+import gallery2 from "@/assets/portfolio-2.jpg";
+import gallery3 from "@/assets/portfolio-3.jpg";
+import gallery4 from "@/assets/portfolio-4.jpg";
 import { useSalons } from "@/hooks/useSalons";
 import { useI18n } from "@/lib/i18n";
 
@@ -16,33 +15,33 @@ const fadeUp = {
   visible: (index: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: index * 0.1, duration: 0.5, ease: [0.4, 0, 0.2, 1] as const },
+    transition: { delay: index * 0.1, duration: 0.55, ease: [0.4, 0, 0.2, 1] as const },
   }),
 };
 
+const branchLocations = [
+  {
+    titleKey: "home.branch.bishkek.title",
+    descriptionKey: "home.branch.bishkek.desc",
+  },
+  {
+    titleKey: "home.branch.tokmok.title",
+    descriptionKey: "home.branch.tokmok.desc",
+  },
+  {
+    titleKey: "home.branch.osh.title",
+    descriptionKey: "home.branch.osh.desc",
+  },
+];
+
+const galleryImages = [gallery1, gallery2, gallery3, gallery4];
+
 const Index = () => {
   const { tr } = useI18n();
-  const {
-    masters,
-    isLoading: mastersLoading,
-    isError: mastersError,
-    refetch: refetchMasters,
-  } = useMasters();
-  const {
-    products,
-    isLoading: productsLoading,
-    isError: productsError,
-    refetch: refetchProducts,
-  } = useProducts();
-  const {
-    salons,
-    isLoading: salonsLoading,
-    isError: salonsError,
-    refetch: refetchSalons,
-  } = useSalons();
+  const { salons, isLoading: salonsLoading, isError: salonsError, refetch: refetchSalons } = useSalons();
 
   const heroSalonsLabel = useMemo(
-    () => `${salons.length} ${tr("hero.locations").toLowerCase()}`,
+    () => tr("hero.locationCount", { count: salons.length }),
     [salons.length, tr],
   );
 
@@ -50,45 +49,44 @@ const Index = () => {
     <div>
       <section className="relative flex min-h-[72vh] items-center overflow-hidden sm:min-h-[85vh]">
         <div className="absolute inset-0">
-          <img src={heroImage} alt="HairLine salon" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/20 sm:from-background sm:via-background/80 sm:to-transparent" />
+          <img src={heroImage} alt={tr("hero.imageAlt")} className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-transparent" />
         </div>
 
         <div className="page-shell relative z-10">
-          <motion.div initial="hidden" animate="visible" className="max-w-2xl py-8">
+          <motion.div initial="hidden" animate="visible" className="max-w-3xl py-10 text-white">
             <motion.p
               variants={fadeUp}
               custom={0}
-              className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground sm:text-sm"
+              className="text-xs font-semibold uppercase tracking-[0.3em] text-primary-200"
             >
-              {tr("hero.subtitle")}
+              {tr("hero.tagline")}
             </motion.p>
             <motion.h1
               variants={fadeUp}
               custom={1}
-              className="mt-4 text-hero font-semibold text-foreground"
+              className="mt-5 text-4xl font-semibold leading-tight sm:text-6xl"
             >
               {tr("hero.title")}
             </motion.h1>
             <motion.p
               variants={fadeUp}
               custom={2}
-              className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg"
+              className="mt-6 max-w-2xl text-lg leading-8 text-white/80 sm:text-xl"
             >
               {tr("hero.desc")}
             </motion.p>
 
-            <motion.div variants={fadeUp} custom={3} className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <motion.div variants={fadeUp} custom={3} className="mt-10 flex flex-col gap-4 sm:flex-row">
               <Link
                 to="/masters"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-6 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.97]"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-8 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
               >
                 {tr("hero.book")}
-                <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/shop"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-secondary px-6 text-sm font-medium text-secondary-foreground transition-all hover:bg-secondary/80"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/10 px-8 text-sm font-semibold text-white transition hover:bg-white/20"
               >
                 {tr("hero.shop")}
               </Link>
@@ -97,13 +95,13 @@ const Index = () => {
             <motion.div
               variants={fadeUp}
               custom={4}
-              className="mt-8 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:gap-6"
+              className="mt-10 flex flex-wrap items-center gap-4 text-sm text-white/80"
             >
-              <span className="flex items-center gap-1.5">
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2">
                 <MapPin className="h-4 w-4" /> {heroSalonsLabel}
               </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="h-4 w-4" /> {tr("hero.hours")}
+              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2">
+                <Clock className="h-4 w-4" /> {tr("hero.openHours")}
               </span>
             </motion.div>
           </motion.div>
@@ -111,169 +109,93 @@ const Index = () => {
       </section>
 
       <section className="page-shell page-section">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
-            <h2 className="section-title">{tr("masters.title")}</h2>
-            <p className="section-subtitle">{tr("masters.subtitle")}</p>
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">{tr("home.about.title")}</p>
+            <h2 className="mt-4 text-3xl font-semibold text-foreground sm:text-4xl">
+              {tr("home.about.heading")}
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+              {tr("home.about.subtitle")}
+            </p>
           </div>
-          <Link
-            to="/masters"
-            className="inline-flex items-center gap-1 text-sm font-medium text-foreground hover:underline sm:self-end"
-          >
-            {tr("masters.all")} <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {mastersLoading &&
-            masters.length === 0 &&
-            Array.from({ length: 4 }).map((_, index) => (
-              <div
-                key={`master-skeleton-${index}`}
-                className="h-[360px] animate-pulse rounded-2xl bg-secondary/60"
-              />
-            ))}
-
-          {!mastersLoading && mastersError && (
-            <div className="col-span-full rounded-2xl border border-border bg-card p-6 text-center">
-              <p className="text-sm text-muted-foreground">Could not load masters.</p>
-              <button
-                className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
-                onClick={() => refetchMasters()}
-              >
-                Retry
-              </button>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+              <p className="text-lg font-semibold">{tr("home.feature.modern.title")}</p>
+              <p className="mt-3 text-sm text-muted-foreground">{tr("home.feature.modern.desc")}</p>
             </div>
-          )}
-
-          {!mastersLoading && !mastersError && masters.length === 0 && (
-            <div className="col-span-full rounded-2xl border border-border bg-card p-6 text-center">
-              <p className="text-sm text-muted-foreground">{tr("masters.notfound")}</p>
+            <div className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+              <p className="text-lg font-semibold">{tr("home.feature.professional.title")}</p>
+              <p className="mt-3 text-sm text-muted-foreground">{tr("home.feature.professional.desc")}</p>
             </div>
-          )}
-
-          {!mastersLoading &&
-            !mastersError &&
-            masters.map((master, index) => (
-              <motion.div
-                key={master.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1, duration: 0.4 }}
-              >
-                <MasterCard master={master} />
-              </motion.div>
-            ))}
-        </div>
-      </section>
-
-      <section className="bg-secondary/40">
-        <div className="page-shell page-section">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="section-title">{tr("products.title")}</h2>
-              <p className="section-subtitle">{tr("products.subtitle")}</p>
-            </div>
-            <Link
-              to="/shop"
-              className="inline-flex items-center gap-1 text-sm font-medium text-foreground hover:underline sm:self-end"
-            >
-              {tr("products.all")} <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {productsLoading &&
-              products.length === 0 &&
-              Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={`product-skeleton-${index}`}
-                  className="h-[340px] animate-pulse rounded-2xl bg-card/70"
-                />
-              ))}
-
-            {!productsLoading && productsError && (
-              <div className="col-span-full rounded-2xl border border-border bg-card p-6 text-center">
-                <p className="text-sm text-muted-foreground">Could not load products.</p>
-                <button
-                  className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
-                  onClick={() => refetchProducts()}
-                >
-                  Retry
-                </button>
-              </div>
-            )}
-
-            {!productsLoading && !productsError && products.length === 0 && (
-              <div className="col-span-full rounded-2xl border border-border bg-card p-6 text-center">
-                <p className="text-sm text-muted-foreground">No products available.</p>
-              </div>
-            )}
-
-            {!productsLoading &&
-              !productsError &&
-              products.slice(0, 4).map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1, duration: 0.4 }}
-                >
-                  <ProductCard product={product} />
-                </motion.div>
-              ))}
           </div>
         </div>
       </section>
 
       <section className="page-shell page-section">
-        <h2 className="section-title">{tr("salons.title")}</h2>
-        <p className="section-subtitle">{tr("salons.subtitle")}</p>
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {salonsLoading &&
-            salons.length === 0 &&
-            Array.from({ length: 3 }).map((_, index) => (
-              <div
-                key={`salon-skeleton-${index}`}
-                className="h-[148px] animate-pulse rounded-2xl bg-secondary/60"
-              />
-            ))}
-
-          {!salonsLoading && salonsError && (
-            <div className="col-span-full rounded-2xl border border-border bg-card p-6 text-center">
-              <p className="text-sm text-muted-foreground">Could not load salons.</p>
-              <button
-                className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
-                onClick={() => refetchSalons()}
-              >
-                Retry
-              </button>
-            </div>
-          )}
-
-          {!salonsLoading && !salonsError && salons.length === 0 && (
-            <div className="col-span-full rounded-2xl border border-border bg-card p-6 text-center">
-              <p className="text-sm text-muted-foreground">No salons available.</p>
-            </div>
-          )}
-
-          {!salonsLoading &&
-            !salonsError &&
-            salons.map((salon) => (
-              <div key={salon.id} className="rounded-2xl bg-card p-5 card-shadow sm:p-6">
-                <h3 className="font-semibold">{salon.name}</h3>
-                <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <MapPin className="h-3.5 w-3.5" /> {salon.address}
-                </p>
-                <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Clock className="h-3.5 w-3.5" /> {salon.workHours}
-                </p>
-              </div>
-            ))}
+        <div className="space-y-4 text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">{tr("home.gallery.heading")}</p>
+          <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">{tr("home.gallery.title")}</h2>
+          <p className="mx-auto max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+            {tr("home.gallery.subtitle")}
+          </p>
         </div>
-        <div className="mt-8">
-          <SalonsMap locations={salons} />
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {galleryImages.map((image, index) => (
+            <div key={index} className="overflow-hidden rounded-3xl bg-muted">
+              <img
+                src={image}
+                alt={tr("home.gallery.alt")}
+                className="h-64 w-full object-cover transition-transform duration-500 hover:scale-105"
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="page-shell page-section">
+        <div className="space-y-4 text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">{tr("home.branches.heading")}</p>
+          <h2 className="text-3xl font-semibold text-foreground sm:text-4xl">{tr("home.branches.title")}</h2>
+          <p className="mx-auto max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+            {tr("home.branches.subtitle")}
+          </p>
+        </div>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {branchLocations.map((branch) => (
+            <div key={branch.titleKey} className="rounded-3xl border border-border bg-card p-6 shadow-sm">
+              <p className="text-xl font-semibold text-foreground">{tr(branch.titleKey)}</p>
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">{tr(branch.descriptionKey)}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="page-shell page-section">
+        <div className="rounded-3xl border border-border bg-card p-8 shadow-sm">
+          <div className="grid gap-8 lg:grid-cols-3">
+            <div className="space-y-3">
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-muted-foreground">{tr("home.why.heading")}</p>
+              <h2 className="text-3xl font-semibold text-foreground">{tr("home.why.title")}</h2>
+            </div>
+
+            <div className="space-y-4">
+              <div className="rounded-3xl border border-border bg-background/70 p-6">
+                <p className="text-lg font-semibold">{tr("home.why.professional.title")}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{tr("home.why.professional.desc")}</p>
+              </div>
+              <div className="rounded-3xl border border-border bg-background/70 p-6">
+                <p className="text-lg font-semibold">{tr("home.why.products.title")}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{tr("home.why.products.desc")}</p>
+              </div>
+              <div className="rounded-3xl border border-border bg-background/70 p-6">
+                <p className="text-lg font-semibold">{tr("home.why.atmosphere.title")}</p>
+                <p className="mt-2 text-sm text-muted-foreground">{tr("home.why.atmosphere.desc")}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div>

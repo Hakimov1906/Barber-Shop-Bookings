@@ -35,7 +35,7 @@ const ProfileRecords = () => {
             className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
             onClick={() => recordsQuery.refetch()}
           >
-            Retry
+            {tr("common.retry")}
           </button>
         </div>
       )}

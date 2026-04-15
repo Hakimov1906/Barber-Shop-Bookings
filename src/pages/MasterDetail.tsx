@@ -225,7 +225,10 @@ const MasterDetail = () => {
               >
                 <img
                   src={image}
-                  alt={`${master.name} portfolio ${index + 1}`}
+                  alt={tr("master.portfolio.imageAlt", {
+                    name: master.name,
+                    index: index + 1,
+                  })}
                   className="aspect-square w-full object-cover transition-transform duration-300 hover:scale-105"
                   loading="lazy"
                 />
@@ -326,7 +329,7 @@ const MasterDetail = () => {
                   type="button"
                   onClick={() => setReviewRating(value)}
                   className="rounded p-1 transition-transform hover:scale-110 disabled:pointer-events-none"
-                  aria-label={`${value} star`}
+                  aria-label={tr("master.review.starLabel", { count: value })}
                   disabled={!isAuthenticated}
                 >
                   <Star
@@ -374,7 +377,7 @@ const MasterDetail = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             src={lightboxImg}
-            alt="Portfolio"
+            alt={tr("master.portfolio.lightboxAlt", { name: master.name })}
             className="max-h-[85vh] max-w-full rounded-2xl object-contain"
           />
         </div>

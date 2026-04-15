@@ -21,16 +21,16 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
     });
 
     if (toast && typeof toast.success === "function") {
-      toast.success(`${product.name} added to cart.`);
+      toast.success(tr("cart.added", { item: product.name }));
       return;
     }
 
     if (typeof toast === "function") {
-      toast(`${product.name} added to cart.`);
+      toast(tr("cart.added", { item: product.name }));
       return;
     }
 
-    console.log(`${product.name} added to cart.`);
+    console.log(tr("cart.added", { item: product.name }));
   };
 
   return (

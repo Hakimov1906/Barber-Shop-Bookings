@@ -5,6 +5,7 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import type { Salon } from "@/data/salons";
+import { useI18n } from "@/lib/i18n";
 
 let markerIconsConfigured = false;
 
@@ -23,6 +24,7 @@ function ensureMarkerIconsConfigured() {
 
 const SalonsMap = ({ locations }: { locations: Salon[] }) => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const { tr } = useI18n();
 
   useEffect(() => {
     if (!mapContainerRef.current || locations.length === 0) return;
@@ -35,7 +37,7 @@ const SalonsMap = ({ locations }: { locations: Salon[] }) => {
     });
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      attribution: tr("salons.map.attribution"),
     }).addTo(map);
 
     const group = L.featureGroup();
@@ -58,19 +60,19 @@ const SalonsMap = ({ locations }: { locations: Salon[] }) => {
     return () => {
       map.remove();
     };
-  }, [locations]);
+  }, [locations, tr]);
 
   if (!locations.length) {
     return (
       <div className="flex h-[320px] items-center justify-center rounded-2xl border border-dashed border-border bg-card text-sm text-muted-foreground sm:h-[360px]">
-        Нет координат для отображения на карте
+        {tr("salons.map.empty")}
       </div>
     );
   }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card card-shadow">
-      <div ref={mapContainerRef} className="h-[360px] w-full sm:h-[420px]" aria-label="Salons map" />
+      <div ref={mapContainerRef} className="h-[360px] w-full sm:h-[420px]" aria-label={tr("salons.map.label")} />
     </div>
   );
 };

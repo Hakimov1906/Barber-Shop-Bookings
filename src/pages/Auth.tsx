@@ -118,7 +118,7 @@ const Auth = () => {
                       onChange={(event) => setPhone(event.target.value)}
                       required
                       type="tel"
-                      placeholder="+996700000000"
+                      placeholder={tr("auth.field.phone.placeholder")}
                       className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
                     />
                   </div>

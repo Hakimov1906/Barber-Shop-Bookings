@@ -135,7 +135,7 @@ const Navbar = () => {
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
             className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-secondary/80 text-foreground transition-colors hover:bg-secondary"
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-label={mobileOpen ? tr("nav.closeMenu") : tr("nav.openMenu")}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>

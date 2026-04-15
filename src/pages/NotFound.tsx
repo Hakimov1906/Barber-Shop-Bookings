@@ -8,7 +8,7 @@ const NotFound = () => {
   return (
     <div className="page-shell flex min-h-[80vh] items-center justify-center py-10">
       <div className="surface-card w-full max-w-xl p-8 text-center card-shadow sm:p-10">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Error</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">{tr("notfound.error")}</p>
         <h1 className="mt-3 text-4xl font-semibold sm:text-5xl">404</h1>
         <p className="mt-3 text-base text-muted-foreground sm:text-lg">{tr("notfound.desc")}</p>
         <div className="mt-6 flex flex-col justify-center gap-2 sm:flex-row">

@@ -8,24 +8,25 @@ import {
   type ReactNode,
 } from "react";
 import { enDictionary } from "@/lib/i18n/dictionaries/en";
-import { kgDictionary } from "@/lib/i18n/dictionaries/kg";
+import { kyDictionary } from "@/lib/i18n/dictionaries/ky";
 import { ruDictionary } from "@/lib/i18n/dictionaries/ru";
 import type { I18nDictionary, I18nKey } from "@/lib/i18n/types";
 
-export type Lang = "kg" | "ru" | "en";
+export type Lang = "ky" | "ru" | "en";
 type ValueGroup = "role" | "location" | "specialty" | "productType" | "service";
 
 const dictionaries: Record<Lang, I18nDictionary> = {
   en: enDictionary,
   ru: ruDictionary,
-  kg: kgDictionary,
+  ky: kyDictionary,
 };
 
 const fallbackDictionary = dictionaries.en;
 
 function getInitialLang(): Lang {
-  const saved = localStorage.getItem("hairline-lang") as Lang | null;
-  if (saved === "kg" || saved === "ru" || saved === "en") {
+  const saved = localStorage.getItem("hairline-lang") as Lang | "kg" | null;
+  if (saved === "kg") return "ky";
+  if (saved === "ky" || saved === "ru" || saved === "en") {
     return saved;
   }
 
@@ -35,7 +36,7 @@ function getInitialLang(): Lang {
 
   const browser = navigator.language.toLowerCase();
   if (browser.startsWith("ru")) return "ru";
-  if (browser.startsWith("ky") || browser.startsWith("kg")) return "kg";
+  if (browser.startsWith("ky") || browser.startsWith("kg")) return "ky";
   return "en";
 }
 
@@ -51,7 +52,7 @@ function normalizeValue(value: string) {
 
 function languageTag(lang: Lang) {
   if (lang === "ru") return "ru-RU";
-  if (lang === "kg") return "ky-KG";
+  if (lang === "ky") return "ky-KG";
   return "en-US";
 }
 
@@ -83,7 +84,7 @@ if (import.meta.env.DEV) {
 interface I18nContextType {
   lang: Lang;
   setLang: (lang: Lang) => void;
-  tr: (key: I18nKey) => string;
+  tr: (key: I18nKey, values?: Record<string, string | number>) => string;
   tv: (group: ValueGroup, value: string) => string;
   price: (amount: number) => string;
   formatDate: (date: Date, options?: Intl.DateTimeFormatOptions) => string;
@@ -104,12 +105,21 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     document.documentElement.lang = languageTag(lang);
   }, [lang]);
 
+  const interpolate = useCallback((value: string, values?: Record<string, string | number>) => {
+    if (!values) return value;
+    return value.replace(/\{\{(\w+)\}\}/g, (_, name) => {
+      const replacement = values[name];
+      return replacement !== undefined ? String(replacement) : "";
+    });
+  }, []);
+
   const tr = useCallback(
-    (key: string) => {
+    (key: string, values?: Record<string, string | number>) => {
       const dictionary = dictionaries[lang];
-      return dictionary[key] || fallbackDictionary[key] || key;
+      const raw = dictionary[key] || fallbackDictionary[key] || key;
+      return interpolate(raw, values);
     },
-    [lang],
+    [lang, interpolate],
   );
 
   const tv = useCallback(

@@ -113,12 +113,12 @@ const Masters = () => {
 
         {!isLoading && isError && (
           <div className="surface-card col-span-full p-6 text-center">
-            <p className="text-sm text-muted-foreground">Could not load masters.</p>
+            <p className="text-sm text-muted-foreground">{tr("masters.error.load")}</p>
             <button
               className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
               onClick={() => refetch()}
             >
-              Retry
+              {tr("common.retry")}
             </button>
           </div>
         )}

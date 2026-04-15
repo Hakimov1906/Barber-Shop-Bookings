@@ -2,7 +2,7 @@ import { useI18n, type Lang } from "@/lib/i18n";
 import { Globe } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-const labels: Record<Lang, string> = { kg: "KG", ru: "RU", en: "EN" };
+const labels: Record<Lang, string> = { ky: "KY", ru: "RU", en: "EN" };
 
 const LanguageSwitcher = () => {
   const { lang, setLang, tr } = useI18n();
@@ -32,7 +32,7 @@ const LanguageSwitcher = () => {
 
       {open && (
         <div className="absolute right-0 top-full mt-1 z-50 min-w-[100px] overflow-hidden rounded-lg border border-border bg-card card-shadow animate-in fade-in-0 zoom-in-95">
-          {(["kg", "ru", "en"] as Lang[]).map((language) => (
+          {(["ky", "ru", "en"] as Lang[]).map((language) => (
             <button
               key={language}
               onClick={() => {

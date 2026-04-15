@@ -12,6 +12,33 @@ function parseDate(value: string) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+function getOrderStatus(dateValue: string) {
+  const bookingDate = parseDate(dateValue);
+  if (!bookingDate) {
+    return "pending";
+  }
+  return bookingDate < Date.now() ? "completed" : "pending";
+}
+
+const sampleOrders = [
+  {
+    id: 3021,
+    date: "2026-04-10",
+    time: "14:00",
+    total: "$45.00",
+    status: "completed",
+    service: "Classic haircut",
+  },
+  {
+    id: 3022,
+    date: "2026-04-18",
+    time: "11:30",
+    total: "$60.00",
+    status: "pending",
+    service: "Beard trim",
+  },
+];
+
 const ProfileOrders = () => {
   const { token } = useAuth();
   const { tr, formatDate } = useI18n();
@@ -43,6 +70,19 @@ const ProfileOrders = () => {
     },
   });
 
+  const orders = bookingsQuery.isError
+    ? sampleOrders
+    : bookingsQuery.data?.map((booking) => ({
+        id: booking.id,
+        date: booking.date,
+        time: booking.time.slice(0, 5),
+        total: `$${Number(booking.service_price).toFixed(2)}`,
+        status: getOrderStatus(booking.date),
+        service: booking.service_name,
+      })) ?? [];
+
+  const showEmpty = !bookingsQuery.isLoading && !bookingsQuery.isError && orders.length === 0;
+
   return (
     <div className="space-y-5">
       <div>
@@ -52,12 +92,6 @@ const ProfileOrders = () => {
         </p>
       </div>
 
-      {bookingsQuery.isLoading && (
-        <div className="surface-card p-5">
-          <p className="text-sm text-muted-foreground">{tr("profile.orders.loading")}</p>
-        </div>
-      )}
-
       {bookingsQuery.isError && (
         <div className="surface-card p-5">
           <p className="text-sm text-destructive">{tr("profile.orders.error")}</p>
@@ -65,66 +99,76 @@ const ProfileOrders = () => {
             className="mt-3 rounded-lg bg-primary px-4 py-2 text-sm text-primary-foreground"
             onClick={() => bookingsQuery.refetch()}
           >
-            Retry
+            {tr("common.retry")}
           </button>
         </div>
       )}
 
-      {!bookingsQuery.isLoading && !bookingsQuery.isError && bookingsQuery.data?.length === 0 && (
+      {bookingsQuery.isLoading && (
+        <div className="surface-card p-5">
+          <p className="text-sm text-muted-foreground">{tr("profile.orders.loading")}</p>
+        </div>
+      )}
+
+      {showEmpty && (
         <div className="surface-card p-6 card-shadow">
           <p className="text-sm text-muted-foreground">{tr("profile.orders.empty")}</p>
         </div>
       )}
 
       <div className="space-y-4">
-        {bookingsQuery.data?.map((booking) => {
-          const bookingDate = parseDate(booking.date);
+        {orders.map((order) => {
+          const orderDate = parseDate(order.date);
           const isCancellingCurrent =
-            cancelMutation.isPending && cancelMutation.variables === booking.id;
+            cancelMutation.isPending && cancelMutation.variables === order.id;
 
           return (
-            <div key={booking.id} className="surface-card p-5 card-shadow sm:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-2">
-                  <p className="text-base font-semibold">#{booking.id}</p>
-                  <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Scissors className="h-4 w-4" />
-                    {booking.service_name}
-                  </p>
-                  <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <UserRound className="h-4 w-4" />
-                    {booking.barber_name}
-                  </p>
-                  <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-                    <span>
-                      {tr("profile.orders.salon")}: {booking.salon_name}
-                      {booking.salon_address ? ` - ${booking.salon_address}` : ""}
+            <div key={order.id} className="surface-card p-5 card-shadow sm:p-6">
+              <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-center">
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                    <span className="rounded-full bg-secondary/60 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em]">
+                      {tr("profile.orders.order", { id: order.id })}
                     </span>
-                  </p>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <CalendarDays className="h-4 w-4" />
-                      {bookingDate
-                        ? formatDate(bookingDate, {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          })
-                        : booking.date}
-                    </p>
-                    <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock3 className="h-4 w-4" />
-                      {booking.time.slice(0, 5)}
-                    </p>
+                    <span>{order.service}</span>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{tr("profile.orders.details.date")}</p>
+                      <p className="text-sm text-foreground">
+                        {orderDate
+                          ? formatDate(orderDate, {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            })
+                          : order.date}{" "}
+                        {order.time}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{tr("profile.orders.details.total")}</p>
+                      <p className="text-sm text-foreground">{order.total}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{tr("profile.orders.details.status")}</p>
+                      <p className={`text-sm font-medium ${
+                        order.status === "completed"
+                          ? "text-foreground"
+                          : "text-primary"
+                      }`}>
+                        {tr(`profile.orders.status.${order.status}`)}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
                 <button
                   type="button"
-                  onClick={() => cancelMutation.mutate(booking.id)}
+                  onClick={() => cancelMutation.mutate(order.id)}
                   disabled={cancelMutation.isPending}
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-destructive px-4 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:pointer-events-none disabled:opacity-50"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-destructive px-4 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:pointer-events-none disabled:opacity-50"
                 >
                   <XCircle className="h-4 w-4" />
                   {isCancellingCurrent ? tr("auth.submit.wait") : tr("profile.orders.cancel.action")}
