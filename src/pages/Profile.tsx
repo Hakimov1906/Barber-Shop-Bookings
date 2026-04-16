@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
-import { LogOut, User, ListChecks, Settings, FileText } from "lucide-react";
+import { LogOut, User, ListChecks, Settings } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 
@@ -37,11 +37,6 @@ const Profile = () => {
       icon: ListChecks,
     },
     {
-      to: "/profile/records",
-      label: tr("profile.tab.records"),
-      icon: FileText,
-    },
-    {
       to: "/profile/settings",
       label: tr("profile.tab.settings"),
       icon: Settings,
@@ -52,13 +47,6 @@ const Profile = () => {
     <div className="page-shell page-section">
       <div className="grid gap-6 xl:grid-cols-[280px_1fr]">
         <aside className="surface-card h-fit p-4 shadow-sm xl:sticky xl:top-20">
-          <div className="mb-6 rounded-3xl border border-border bg-background/80 p-4 text-sm text-muted-foreground">
-            <p className="font-semibold uppercase tracking-[0.2em]">{tr("profile.title")}</p>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              {tr("profile.sidebar.desc")}
-            </p>
-          </div>
-
           <nav className="space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -93,21 +81,7 @@ const Profile = () => {
           </div>
         </aside>
 
-        <main className="space-y-8">
-          <section className="surface-card rounded-3xl border border-border bg-card/80 p-8 shadow-sm">
-            <div className="max-w-3xl space-y-4">
-              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-muted-foreground">
-                {tr("profile.title")}
-              </p>
-              <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-                {tr("profile.dashboard.title")}
-              </h1>
-              <p className="max-w-2xl text-base leading-7 text-muted-foreground">
-                {tr("profile.dashboard.subtitle")}
-              </p>
-            </div>
-          </section>
-
+        <main>
           <Outlet />
         </main>
       </div>

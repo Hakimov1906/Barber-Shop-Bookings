@@ -400,8 +400,8 @@ router.post('/auth/register', async (req, res, next) => {
   const client = await pool.connect();
   try {
     const exists = await client.query(
-      'SELECT id FROM users WHERE email = $1 OR phone = $2',
-      [data.email, data.phone]
+      'SELECT id FROM users WHERE phone = $1',
+      [data.phone]
     );
     if (exists.rowCount) {
       return res.status(409).json({ error: 'User already exists' });
@@ -409,10 +409,10 @@ router.post('/auth/register', async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(data.password, 10);
     const insertRes = await client.query(
-      `INSERT INTO users (full_name, email, phone, password_hash)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, full_name, email, phone, created_at`,
-      [data.fullName, data.email, data.phone, passwordHash]
+      `INSERT INTO users (full_name, phone, password_hash)
+       VALUES ($1, $2, $3)
+       RETURNING id, full_name, phone, created_at`,
+      [data.fullName, data.phone, passwordHash]
     );
 
     res.status(201).json({ user: insertRes.rows[0] });
@@ -439,8 +439,8 @@ router.post('/auth/login', loginRateLimiter, async (req, res, next) => {
 
   try {
     const result = await pool.query(
-      'SELECT id, full_name, email, phone, password_hash FROM users WHERE email = $1',
-      [data.email]
+      'SELECT id, full_name, phone, password_hash FROM users WHERE phone = $1',
+      [data.phone]
     );
     if (!result.rowCount) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -462,7 +462,6 @@ router.post('/auth/login', loginRateLimiter, async (req, res, next) => {
       user: {
         id: user.id,
         fullName: user.full_name,
-        email: user.email,
         phone: user.phone
       }
     });
@@ -566,7 +565,7 @@ router.get('/users/me', requireAuth, requireRole('user'), async (req, res, next)
   try {
     const result = await pool.query(
       `
-      SELECT id, full_name, email, phone, created_at
+      SELECT id, full_name, phone, created_at
       FROM users
       WHERE id = $1
       `,
@@ -602,10 +601,6 @@ router.patch('/users/me', requireAuth, requireRole('user'), async (req, res, nex
     params.push(data.fullName);
     fields.push(`full_name = $${params.length}`);
   }
-  if (typeof data.email !== 'undefined') {
-    params.push(data.email);
-    fields.push(`email = $${params.length}`);
-  }
   if (typeof data.phone !== 'undefined') {
     params.push(data.phone);
     fields.push(`phone = $${params.length}`);
@@ -619,7 +614,7 @@ router.patch('/users/me', requireAuth, requireRole('user'), async (req, res, nex
       UPDATE users
       SET ${fields.join(', ')}
       WHERE id = $${params.length}
-      RETURNING id, full_name, email, phone, created_at
+      RETURNING id, full_name, phone, created_at
       `,
       params
     );
@@ -631,8 +626,123 @@ router.patch('/users/me', requireAuth, requireRole('user'), async (req, res, nex
     res.json({ user: result.rows[0] });
   } catch (err) {
     if (err.code === '23505') {
-      return res.status(409).json({ error: 'Email or phone already in use' });
+      return res.status(409).json({ error: 'Phone already in use' });
     }
+    next(err);
+  }
+});
+
+router.get('/cart/me', requireAuth, requireRole('user'), async (req, res, next) => {
+  const userId = Number(req.user.sub);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(401).json({ error: 'Invalid token subject' });
+  }
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        ci.product_id,
+        ci.quantity,
+        p.name,
+        p.price,
+        p.image_url
+      FROM cart_items ci
+      JOIN products p ON p.id = ci.product_id
+      WHERE ci.user_id = $1
+        AND p.is_active = true
+      ORDER BY ci.created_at ASC
+      `,
+      [userId]
+    );
+
+    res.json({
+      items: result.rows.map((row) => ({
+        product_id: Number(row.product_id),
+        quantity: Number(row.quantity),
+        name: row.name,
+        price: String(row.price),
+        image_url: row.image_url
+      }))
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/cart/me/items/:productId', requireAuth, requireRole('user'), async (req, res, next) => {
+  const userId = Number(req.user.sub);
+  const productId = Number(req.params.productId);
+  const quantity = Number(req.body?.quantity);
+
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(401).json({ error: 'Invalid token subject' });
+  }
+  if (!Number.isInteger(productId) || productId <= 0) {
+    return res.status(400).json({ error: 'Invalid product id' });
+  }
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    return res.status(400).json({ error: 'Invalid quantity' });
+  }
+
+  try {
+    const productRes = await pool.query(
+      'SELECT id FROM products WHERE id = $1 AND is_active = true',
+      [productId]
+    );
+    if (!productRes.rowCount) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    await pool.query(
+      `
+      INSERT INTO cart_items (user_id, product_id, quantity)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (user_id, product_id) DO UPDATE SET
+        quantity = EXCLUDED.quantity,
+        updated_at = NOW()
+      `,
+      [userId, productId, quantity]
+    );
+
+    res.json({ status: 'updated' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/cart/me/items/:productId', requireAuth, requireRole('user'), async (req, res, next) => {
+  const userId = Number(req.user.sub);
+  const productId = Number(req.params.productId);
+
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(401).json({ error: 'Invalid token subject' });
+  }
+  if (!Number.isInteger(productId) || productId <= 0) {
+    return res.status(400).json({ error: 'Invalid product id' });
+  }
+
+  try {
+    await pool.query(
+      'DELETE FROM cart_items WHERE user_id = $1 AND product_id = $2',
+      [userId, productId]
+    );
+    res.json({ status: 'removed' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/cart/me', requireAuth, requireRole('user'), async (req, res, next) => {
+  const userId = Number(req.user.sub);
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(401).json({ error: 'Invalid token subject' });
+  }
+
+  try {
+    await pool.query('DELETE FROM cart_items WHERE user_id = $1', [userId]);
+    res.json({ status: 'cleared' });
+  } catch (err) {
     next(err);
   }
 });

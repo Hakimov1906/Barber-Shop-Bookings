@@ -1,4 +1,16 @@
-import { createContext, useContext, useEffect, useMemo, useReducer, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { ApiError, api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import { toast } from "@/hooks/use-toast";
+import { useI18n } from "@/lib/i18n";
 
 export type CartItem = {
   id: string;
@@ -12,152 +24,161 @@ export type CartProduct = Omit<CartItem, "quantity"> & {
   quantity?: number;
 };
 
-type CartState = {
-  items: CartItem[];
-};
-
-type CartAction =
-  | { type: "ADD_TO_CART"; product: CartProduct }
-  | { type: "REMOVE_FROM_CART"; productId: string }
-  | { type: "INCREASE_QUANTITY"; productId: string }
-  | { type: "DECREASE_QUANTITY"; productId: string }
-  | { type: "CLEAR_CART" };
-
-const STORAGE_KEY = "cart";
-
-const initialState: CartState = {
-  items: [],
-};
-
-const getCartFromStorage = (): CartItem[] => {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as CartItem[];
-    if (!Array.isArray(parsed)) return [];
-    return parsed.map((item) => ({
-      id: String(item.id),
-      name: String(item.name),
-      price: Number(item.price),
-      image: String(item.image),
-      quantity: Number(item.quantity),
-    }));
-  } catch {
-    return [];
-  }
-};
-
-const saveCartToStorage = (items: CartItem[]) => {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  } catch {
-    // ignore localStorage write failures
-  }
-};
-
-const cartReducer = (state: CartState, action: CartAction): CartState => {
-  switch (action.type) {
-    case "ADD_TO_CART": {
-      const product = action.product;
-      const existingIndex = state.items.findIndex((item) => item.id === product.id);
-      if (existingIndex >= 0) {
-        const updatedItems = [...state.items];
-        updatedItems[existingIndex] = {
-          ...updatedItems[existingIndex],
-          quantity: updatedItems[existingIndex].quantity + (product.quantity ?? 1),
-        };
-        return { items: updatedItems };
-      }
-
-      return {
-        items: [
-          ...state.items,
-          {
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            quantity: product.quantity && product.quantity > 0 ? product.quantity : 1,
-          },
-        ],
-      };
-    }
-
-    case "REMOVE_FROM_CART": {
-      return {
-        items: state.items.filter((item) => item.id !== action.productId),
-      };
-    }
-
-    case "INCREASE_QUANTITY": {
-      return {
-        items: state.items.map((item) =>
-          item.id === action.productId ? { ...item, quantity: item.quantity + 1 } : item,
-        ),
-      };
-    }
-
-    case "DECREASE_QUANTITY": {
-      return {
-        items: state.items
-          .map((item) =>
-            item.id === action.productId ? { ...item, quantity: item.quantity - 1 } : item,
-          )
-          .filter((item) => item.quantity > 0),
-      };
-    }
-
-    case "CLEAR_CART":
-      return { items: [] };
-
-    default:
-      return state;
-  }
-};
-
 export type CartContextValue = {
   items: CartItem[];
   totalItems: number;
   totalPrice: number;
-  addToCart: (product: CartProduct) => void;
-  removeFromCart: (productId: string) => void;
-  increaseQuantity: (productId: string) => void;
-  decreaseQuantity: (productId: string) => void;
-  clearCart: () => void;
+  isLoading: boolean;
+  addToCart: (product: CartProduct) => Promise<boolean>;
+  removeFromCart: (productId: string) => Promise<boolean>;
+  increaseQuantity: (productId: string) => Promise<boolean>;
+  decreaseQuantity: (productId: string) => Promise<boolean>;
+  clearCart: () => Promise<boolean>;
 };
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
 
+function mapApiCartItemToCartItem(item: Awaited<ReturnType<typeof api.getMyCart>>["items"][number]): CartItem {
+  return {
+    id: String(item.product_id),
+    name: item.name,
+    price: Number(item.price),
+    image: item.image_url || "",
+    quantity: Number(item.quantity),
+  };
+}
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [state, dispatch] = useReducer(cartReducer, initialState, () => ({ items: getCartFromStorage() }));
+  const { token } = useAuth();
+  const { tr } = useI18n();
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const redirectToAuth = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const redirect = `${window.location.pathname}${window.location.search}`;
+    window.location.assign(`/auth?redirect=${encodeURIComponent(redirect)}`);
+  }, []);
+
+  const ensureToken = useCallback(() => {
+    if (token) return token;
+    toast({
+      variant: "destructive",
+      title: tr("booking.signin.required.title"),
+      description: tr("booking.signin.required.desc"),
+    });
+    redirectToAuth();
+    return null;
+  }, [redirectToAuth, token, tr]);
+
+  const loadCart = useCallback(
+    async (authToken: string) => {
+      const response = await api.getMyCart(authToken);
+      setItems(response.items.map(mapApiCartItemToCartItem));
+    },
+    [],
+  );
 
   useEffect(() => {
-    saveCartToStorage(state.items);
-  }, [state.items]);
+    if (!token) {
+      setItems([]);
+      return;
+    }
+
+    setIsLoading(true);
+    loadCart(token)
+      .catch((error) => {
+        const description =
+          error instanceof ApiError ? error.message : tr("cart.error.load");
+        toast({
+          variant: "destructive",
+          title: tr("booking.error.title"),
+          description,
+        });
+      })
+      .finally(() => setIsLoading(false));
+  }, [loadCart, token, tr]);
+
+  const withAuthCartUpdate = useCallback(
+    async (updater: (authToken: string) => Promise<void>) => {
+      const authToken = ensureToken();
+      if (!authToken) return false;
+
+      try {
+        setIsLoading(true);
+        await updater(authToken);
+        await loadCart(authToken);
+        return true;
+      } catch (error) {
+        const description =
+          error instanceof ApiError ? error.message : tr("cart.error.update");
+        toast({
+          variant: "destructive",
+          title: tr("booking.error.title"),
+          description,
+        });
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [ensureToken, loadCart, tr],
+  );
 
   const value = useMemo<CartContextValue>(() => {
-    const totalItems = state.items.reduce((sum, item) => sum + item.quantity, 0);
-    const totalPrice = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+    const totalPrice = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     return {
-      items: state.items,
+      items,
       totalItems,
       totalPrice,
-      addToCart: (product) => dispatch({ type: "ADD_TO_CART", product }),
-      removeFromCart: (productId) => dispatch({ type: "REMOVE_FROM_CART", productId }),
-      increaseQuantity: (productId) => dispatch({ type: "INCREASE_QUANTITY", productId }),
-      decreaseQuantity: (productId) => dispatch({ type: "DECREASE_QUANTITY", productId }),
-      clearCart: () => dispatch({ type: "CLEAR_CART" }),
+      isLoading,
+      addToCart: async (product) => {
+        const productId = Number(product.id);
+        const existing = items.find((item) => item.id === String(productId));
+        const nextQuantity =
+          (existing?.quantity || 0) + (product.quantity && product.quantity > 0 ? product.quantity : 1);
+
+        return withAuthCartUpdate(async (authToken) => {
+          await api.setMyCartItem(authToken, productId, { quantity: nextQuantity });
+        });
+      },
+      removeFromCart: async (productId) =>
+        withAuthCartUpdate(async (authToken) => {
+          await api.removeMyCartItem(authToken, Number(productId));
+        }),
+      increaseQuantity: async (productId) => {
+        const existing = items.find((item) => item.id === productId);
+        if (!existing) return false;
+        return withAuthCartUpdate(async (authToken) => {
+          await api.setMyCartItem(authToken, Number(productId), {
+            quantity: existing.quantity + 1,
+          });
+        });
+      },
+      decreaseQuantity: async (productId) => {
+        const existing = items.find((item) => item.id === productId);
+        if (!existing) return false;
+        return withAuthCartUpdate(async (authToken) => {
+          if (existing.quantity <= 1) {
+            await api.removeMyCartItem(authToken, Number(productId));
+            return;
+          }
+
+          await api.setMyCartItem(authToken, Number(productId), {
+            quantity: existing.quantity - 1,
+          });
+        });
+      },
+      clearCart: async () =>
+        withAuthCartUpdate(async (authToken) => {
+          await api.clearMyCart(authToken);
+        }),
     };
-  }, [state.items]);
+  }, [isLoading, items, withAuthCartUpdate]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };

@@ -13,7 +13,6 @@ describe("Profile info page", () => {
         user: {
           id: 1,
           fullName: "Test User",
-          email: "test@example.com",
           phone: "+996700000001",
         },
       }),
@@ -27,7 +26,6 @@ describe("Profile info page", () => {
     expect(screen.queryByRole("link", { name: "Profile settings" })).not.toBeInTheDocument();
 
     expect(screen.getByText("Test User")).toBeInTheDocument();
-    expect(screen.getByText("test@example.com")).toBeInTheDocument();
     expect(screen.getByText("+996700000001")).toBeInTheDocument();
   });
 });

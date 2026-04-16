@@ -300,7 +300,7 @@ router.get('/users', async (req, res, next) => {
   try {
     const result = await pool.query(
       `
-      SELECT id, full_name, email, phone, created_at
+      SELECT id, full_name, phone, created_at
       FROM users
       ORDER BY created_at DESC
       LIMIT $1 OFFSET $2

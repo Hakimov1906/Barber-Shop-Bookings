@@ -18,7 +18,7 @@
   "hero.locations": "Salons",
   "hero.hours": "9:00 - 21:00",
   "hero.openHours": "Open daily 09:00 — 21:00",
-  "hero.locationCount": "{count} salons",
+  "hero.locationCount": "{{count}} salons",
   "hero.tagline": "Premium barber experience",
   "home.about.title": "About Us",
   "home.about.heading": "Beautiful cuts and premium care in every appointment.",
@@ -144,7 +144,7 @@
   "auth.register.subtitle": "Create an account to book your appointment.",
   "auth.field.fullName": "Full name",
   "auth.field.phone": "Phone",
-  "auth.field.phone.placeholder": "+996700000000",
+  "auth.field.phone.placeholder": "+996000000000",
   "auth.field.email": "Email",
   "auth.field.password": "Password",
   "auth.submit.wait": "Please wait...",
@@ -280,5 +280,8 @@
   "service.highlights": "Highlights",
   "service.balayage": "Balayage",
   "service.hair_treatment": "Hair treatment",
-  "currency": "KGS"
+  "currency": "KGS",
+  "profile.settings.password.error.maxLength": "New password must be at most 50 characters.",
+  "cart.error.load": "Failed to load cart.",
+  "cart.error.update": "Failed to update cart."
 }

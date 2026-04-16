@@ -12,6 +12,7 @@ import { ApiError, api } from "@/lib/api";
 import { mapApiReviewsToMasterReviews } from "@/lib/masters";
 
 const MIN_REVIEW_LENGTH = 5;
+const MAX_REVIEW_LENGTH = 150;
 
 const MasterDetail = () => {
   const { id } = useParams();
@@ -350,11 +351,11 @@ const MasterDetail = () => {
             placeholder={tr("master.review.form.placeholder")}
             className="mt-4 min-h-[110px] w-full rounded-lg border-0 bg-secondary px-4 py-3 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
             disabled={!isAuthenticated || reviewMutation.isPending}
-            maxLength={1000}
+            maxLength={MAX_REVIEW_LENGTH}
           />
 
           <div className="mt-2 text-xs text-muted-foreground">
-            {reviewComment.trim().length}/{1000}
+            {reviewComment.trim().length}/{MAX_REVIEW_LENGTH}
           </div>
 
           <button

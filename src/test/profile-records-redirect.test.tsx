@@ -1,4 +1,4 @@
-﻿import { render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import App from "@/App";
 
@@ -27,7 +27,6 @@ describe("Profile records redirect", () => {
         user: {
           id: 1,
           fullName: "Test User",
-          email: "test@example.com",
           phone: "+996700000001",
         },
       }),

@@ -18,6 +18,7 @@ export type ApiUser = components["schemas"]["UserPublic"];
 export type ApiBookingResponse = components["schemas"]["BookingCreatedResponse"];
 export type ApiReview = components["schemas"]["Review"];
 export type ApiSalon = components["schemas"]["Salon"];
+export type ApiCartItem = components["schemas"]["CartItem"];
 export interface ApiUserProfileResponse {
   user: ApiUser;
 }
@@ -44,16 +45,17 @@ type ReviewCreateRequest = components["schemas"]["ReviewCreateRequest"];
 type ReviewCreateResponse = components["schemas"]["ReviewCreateResponse"];
 type UserPasswordUpdateRequest = components["schemas"]["UserPasswordUpdateRequest"];
 type UserPasswordUpdateResponse = components["schemas"]["UserPasswordUpdateResponse"];
+type CartResponse = components["schemas"]["CartResponse"];
+type CartItemUpsertRequest = components["schemas"]["CartItemUpsertRequest"];
+type CartStatusResponse = components["schemas"]["CartStatusResponse"];
 type UpdateProfileRequest = {
   fullName?: string;
-  email?: string;
   phone?: string;
 };
 
 interface MockUserRecord {
   id: number;
   fullName: string;
-  email: string;
   phone: string;
   password: string;
   createdAt: string;
@@ -79,9 +81,19 @@ interface MockReviewRecord {
   createdAt: string;
 }
 
+interface MockCartItemRecord {
+  productId: number;
+  quantity: number;
+}
+
 const MOCK_USERS_KEY = "hairline-mock-users";
 const MOCK_BOOKINGS_KEY = "hairline-mock-bookings";
 const MOCK_REVIEWS_KEY = "hairline-mock-reviews";
+const MOCK_CART_KEY = "hairline-mock-cart";
+const KG_PHONE_REGEX = /^\+996\d{9}$/;
+const MIN_PASSWORD_LENGTH = 6;
+const MAX_PASSWORD_LENGTH = 50;
+const MAX_REVIEW_COMMENT_LENGTH = 150;
 const MOCK_SLOT_TIMES = [
   "10:00",
   "10:30",
@@ -208,6 +220,38 @@ function loadMockReviews(): MockReviewRecord[] {
 
 function saveMockReviews(reviews: MockReviewRecord[]) {
   localStorage.setItem(MOCK_REVIEWS_KEY, JSON.stringify(reviews));
+}
+
+function loadMockCartByUser(): Record<string, MockCartItemRecord[]> {
+  const raw = localStorage.getItem(MOCK_CART_KEY);
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as Record<string, MockCartItemRecord[]>;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveMockCartByUser(cart: Record<string, MockCartItemRecord[]>) {
+  localStorage.setItem(MOCK_CART_KEY, JSON.stringify(cart));
+}
+
+function getMockProductsById() {
+  const index = new Map<number, ApiProduct>();
+  seedProducts.forEach((product, productIndex) => {
+    index.set(Number(product.id) || productIndex + 1, {
+      id: Number(product.id) || productIndex + 1,
+      name: product.name,
+      description: product.description,
+      price: String(product.price),
+      image_url: product.image,
+      category: product.category,
+      type: product.type,
+      stock_qty: 100,
+    });
+  });
+  return index;
 }
 
 function ensureMockReviewsSeeded() {
@@ -348,12 +392,21 @@ const mockApi = {
   register: async (body: RegisterRequest): Promise<RegisterResponse> => {
     await wait();
     const users = loadMockUsers();
-    const email = body.email.trim().toLowerCase();
+    const fullName = body.fullName.trim();
     const phone = body.phone.trim();
+    const passwordLength = body.password.length;
 
-    const exists = users.some(
-      (user) => user.email.toLowerCase() === email || user.phone === phone,
-    );
+    if (
+      fullName.length < 2 ||
+      fullName.length > 120 ||
+      !KG_PHONE_REGEX.test(phone) ||
+      passwordLength < MIN_PASSWORD_LENGTH ||
+      passwordLength > MAX_PASSWORD_LENGTH
+    ) {
+      throw new ApiError("Invalid payload", 400);
+    }
+
+    const exists = users.some((user) => user.phone === phone);
     if (exists) {
       throw new ApiError("User already exists", 409);
     }
@@ -362,8 +415,7 @@ const mockApi = {
     const createdAt = new Date().toISOString();
     const created: MockUserRecord = {
       id: nextId,
-      fullName: body.fullName.trim(),
-      email,
+      fullName,
       phone,
       password: body.password,
       createdAt,
@@ -375,7 +427,6 @@ const mockApi = {
       user: {
         id: created.id,
         full_name: created.fullName,
-        email: created.email,
         phone: created.phone,
         created_at: created.createdAt,
       },
@@ -384,8 +435,11 @@ const mockApi = {
   login: async (body: LoginRequest): Promise<LoginResponse> => {
     await wait();
     const users = loadMockUsers();
-    const email = body.email.trim().toLowerCase();
-    const found = users.find((user) => user.email.toLowerCase() === email);
+    const phone = body.phone.trim();
+    if (!KG_PHONE_REGEX.test(phone) || !body.password?.length) {
+      throw new ApiError("Invalid payload", 400);
+    }
+    const found = users.find((user) => user.phone === phone);
 
     if (!found || found.password !== body.password) {
       throw new ApiError("Invalid credentials", 401);
@@ -396,7 +450,6 @@ const mockApi = {
       user: {
         id: found.id,
         fullName: found.fullName,
-        email: found.email,
         phone: found.phone,
       },
     };
@@ -541,24 +594,24 @@ const mockApi = {
       throw new ApiError("User not found", 404);
     }
 
-    const email = body.email?.trim().toLowerCase();
-    const phone = body.phone?.trim();
-
-    if (
-      email &&
-      users.some((user) => user.id !== userId && user.email.toLowerCase() === email)
-    ) {
-      throw new ApiError("Email or phone already in use", 409);
+    if (typeof body.fullName !== "undefined") {
+      const fullName = body.fullName.trim();
+      if (fullName.length < 2 || fullName.length > 120) {
+        throw new ApiError("Invalid payload", 400);
+      }
     }
+
+    const phone = body.phone?.trim();
+    if (phone && !KG_PHONE_REGEX.test(phone)) {
+      throw new ApiError("Invalid payload", 400);
+    }
+
     if (phone && users.some((user) => user.id !== userId && user.phone === phone)) {
-      throw new ApiError("Email or phone already in use", 409);
+      throw new ApiError("Phone already in use", 409);
     }
 
     if (body.fullName) {
       target.fullName = body.fullName.trim();
-    }
-    if (email) {
-      target.email = email;
     }
     if (phone) {
       target.phone = phone;
@@ -569,7 +622,6 @@ const mockApi = {
       user: {
         id: target.id,
         full_name: target.fullName,
-        email: target.email,
         phone: target.phone,
         created_at: target.createdAt ?? new Date().toISOString(),
       },
@@ -588,6 +640,9 @@ const mockApi = {
     if (!body.currentPassword?.trim() || (body.newPassword?.length ?? 0) < 6) {
       throw new ApiError("Invalid payload", 400);
     }
+    if ((body.newPassword?.length ?? 0) > 50) {
+      throw new ApiError("Invalid payload", 400);
+    }
 
     const users = loadMockUsers();
     const target = users.find((user) => user.id === userId);
@@ -602,6 +657,99 @@ const mockApi = {
     saveMockUsers(users);
 
     return { status: "password_updated" };
+  },
+  getMyCart: async (token: string): Promise<CartResponse> => {
+    await wait();
+    const userId = fromMockToken(token);
+    if (!userId) {
+      throw new ApiError("Invalid token", 401);
+    }
+
+    const cartByUser = loadMockCartByUser();
+    const userCart = cartByUser[String(userId)] || [];
+    const productIndex = getMockProductsById();
+    const items = userCart
+      .map((item) => {
+        const product = productIndex.get(item.productId);
+        if (!product) return null;
+        return {
+          product_id: product.id,
+          quantity: item.quantity,
+          name: product.name,
+          price: product.price,
+          image_url: product.image_url,
+        };
+      })
+      .filter((item): item is ApiCartItem => Boolean(item));
+
+    return { items };
+  },
+  setMyCartItem: async (
+    token: string,
+    productId: number,
+    body: CartItemUpsertRequest,
+  ): Promise<CartStatusResponse> => {
+    await wait();
+    const userId = fromMockToken(token);
+    if (!userId) {
+      throw new ApiError("Invalid token", 401);
+    }
+    if (!Number.isInteger(productId) || productId <= 0) {
+      throw new ApiError("Invalid product id", 400);
+    }
+    if (!Number.isInteger(body.quantity) || body.quantity <= 0) {
+      throw new ApiError("Invalid quantity", 400);
+    }
+
+    const productIndex = getMockProductsById();
+    if (!productIndex.has(productId)) {
+      throw new ApiError("Product not found", 404);
+    }
+
+    const cartByUser = loadMockCartByUser();
+    const key = String(userId);
+    const userCart = [...(cartByUser[key] || [])];
+    const itemIndex = userCart.findIndex((item) => item.productId === productId);
+    if (itemIndex >= 0) {
+      userCart[itemIndex] = {
+        productId,
+        quantity: body.quantity,
+      };
+    } else {
+      userCart.push({ productId, quantity: body.quantity });
+    }
+    cartByUser[key] = userCart;
+    saveMockCartByUser(cartByUser);
+    return { status: "updated" };
+  },
+  removeMyCartItem: async (token: string, productId: number): Promise<CartStatusResponse> => {
+    await wait();
+    const userId = fromMockToken(token);
+    if (!userId) {
+      throw new ApiError("Invalid token", 401);
+    }
+    if (!Number.isInteger(productId) || productId <= 0) {
+      throw new ApiError("Invalid product id", 400);
+    }
+
+    const cartByUser = loadMockCartByUser();
+    const key = String(userId);
+    const userCart = cartByUser[key] || [];
+    cartByUser[key] = userCart.filter((item) => item.productId !== productId);
+    saveMockCartByUser(cartByUser);
+    return { status: "removed" };
+  },
+  clearMyCart: async (token: string): Promise<CartStatusResponse> => {
+    await wait();
+    const userId = fromMockToken(token);
+    if (!userId) {
+      throw new ApiError("Invalid token", 401);
+    }
+
+    const cartByUser = loadMockCartByUser();
+    delete cartByUser[String(userId)];
+    saveMockCartByUser(cartByUser);
+    return { status: "cleared" };
   },
   getBarberReviews: async (barberId: number): Promise<ApiReview[]> => {
     await wait();
@@ -629,6 +777,17 @@ const mockApi = {
       throw new ApiError("Invalid token", 401);
     }
 
+    const comment = body.comment.trim();
+    if (
+      !Number.isInteger(body.rating) ||
+      body.rating < 1 ||
+      body.rating > 5 ||
+      comment.length < 5 ||
+      comment.length > MAX_REVIEW_COMMENT_LENGTH
+    ) {
+      throw new ApiError("Invalid payload", 400);
+    }
+
     const user = loadMockUsers().find((item) => item.id === userId);
     if (!user) {
       throw new ApiError("User not found", 401);
@@ -651,7 +810,7 @@ const mockApi = {
     let saved: MockReviewRecord;
     if (existing) {
       existing.rating = body.rating;
-      existing.comment = body.comment.trim();
+      existing.comment = comment;
       existing.createdAt = now;
       existing.authorName = user.fullName;
       saved = existing;
@@ -663,7 +822,7 @@ const mockApi = {
         userId,
         authorName: user.fullName,
         rating: body.rating,
-        comment: body.comment.trim(),
+        comment,
         createdAt: now,
       };
       reviews.push(saved);
@@ -854,6 +1013,62 @@ const realApi = {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(body),
+      });
+    } catch (error) {
+      return toApiError(error);
+    }
+  },
+  getMyCart: async (token: string): Promise<CartResponse> => {
+    try {
+      return await requestJson<CartResponse>("/api/cart/me", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      return toApiError(error);
+    }
+  },
+  setMyCartItem: async (
+    token: string,
+    productId: number,
+    body: CartItemUpsertRequest,
+  ): Promise<CartStatusResponse> => {
+    try {
+      return await requestJson<CartStatusResponse>(`/api/cart/me/items/${productId}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+    } catch (error) {
+      return toApiError(error);
+    }
+  },
+  removeMyCartItem: async (
+    token: string,
+    productId: number,
+  ): Promise<CartStatusResponse> => {
+    try {
+      return await requestJson<CartStatusResponse>(`/api/cart/me/items/${productId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      return toApiError(error);
+    }
+  },
+  clearMyCart: async (token: string): Promise<CartStatusResponse> => {
+    try {
+      return await requestJson<CartStatusResponse>("/api/cart/me", {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
     } catch (error) {
       return toApiError(error);

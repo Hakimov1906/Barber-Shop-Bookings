@@ -220,19 +220,16 @@ const products = [
 const demoUsers = [
   {
     fullName: 'Ivan Petrov',
-    email: 'ivan.petrov@example.com',
     phone: '+996555100001',
     passwordHash: '$2a$10$cl7uvxDsDH./lX07w3Zn1.vbRUnDpV40RjaOftlMNKdLPWfUOJw9i'
   },
   {
     fullName: 'Aida User',
-    email: 'aida.user@example.com',
     phone: '+996555100002',
     passwordHash: '$2a$10$cl7uvxDsDH./lX07w3Zn1.vbRUnDpV40RjaOftlMNKdLPWfUOJw9i'
   },
   {
     fullName: 'Test Client',
-    email: 'test.client@example.com',
     phone: '+996555100003',
     passwordHash: '$2a$10$2zOm8J.QW7vLlj3D4BYmSuw2J58iPFteVwJJ0EcVh4PeTRkp58DOq'
   }
@@ -241,7 +238,7 @@ const demoUsers = [
 const reviewSeeds = [
   {
     barberName: 'Timur Karimov',
-    userEmail: 'ivan.petrov@example.com',
+    userPhone: '+996555100001',
     authorName: 'Ivan Petrov',
     rating: 5.0,
     comment: 'Very clean fade, exactly as requested.',
@@ -249,7 +246,7 @@ const reviewSeeds = [
   },
   {
     barberName: 'Timur Karimov',
-    userEmail: 'aida.user@example.com',
+    userPhone: '+996555100002',
     authorName: 'Aida User',
     rating: 4.8,
     comment: 'Fast service and good attention to detail.',
@@ -257,7 +254,7 @@ const reviewSeeds = [
   },
   {
     barberName: 'Aida Omurbekova',
-    userEmail: 'test.client@example.com',
+    userPhone: '+996555100003',
     authorName: 'Test Client',
     rating: 4.9,
     comment: 'Loved the styling tips, very practical.',
@@ -265,7 +262,7 @@ const reviewSeeds = [
   },
   {
     barberName: 'Elena Petrova',
-    userEmail: 'ivan.petrov@example.com',
+    userPhone: '+996555100001',
     authorName: 'Ivan Petrov',
     rating: 5.0,
     comment: 'Color result looks natural and healthy.',
@@ -273,7 +270,7 @@ const reviewSeeds = [
   },
   {
     barberName: 'Nursultan Imanov',
-    userEmail: 'aida.user@example.com',
+    userPhone: '+996555100002',
     authorName: 'Aida User',
     rating: 4.6,
     comment: 'Trim and contour were accurate, will come back.',
@@ -281,7 +278,7 @@ const reviewSeeds = [
   },
   {
     barberName: 'Madina Ryskulova',
-    userEmail: 'test.client@example.com',
+    userPhone: '+996555100003',
     authorName: 'Test Client',
     rating: 4.8,
     comment: 'Great volume and the hairstyle lasted all day.',
@@ -526,36 +523,35 @@ async function upsertProducts(client) {
 }
 
 async function upsertUsers(client) {
-  const userIdByEmail = new Map();
+  const userIdByPhone = new Map();
 
   for (const user of demoUsers) {
     const result = await client.query(
       `
-      INSERT INTO users (full_name, email, phone, password_hash)
-      VALUES ($1, $2, $3, $4)
-      ON CONFLICT (email) DO UPDATE SET
+      INSERT INTO users (full_name, phone, password_hash)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (phone) DO UPDATE SET
         full_name = EXCLUDED.full_name,
-        phone = EXCLUDED.phone,
         password_hash = EXCLUDED.password_hash
-      RETURNING id, email
+      RETURNING id, phone
       `,
-      [user.fullName, user.email, user.phone, user.passwordHash]
+      [user.fullName, user.phone, user.passwordHash]
     );
 
-    userIdByEmail.set(result.rows[0].email, result.rows[0].id);
+    userIdByPhone.set(result.rows[0].phone, result.rows[0].id);
   }
 
-  return userIdByEmail;
+  return userIdByPhone;
 }
 
-async function upsertReviews(client, barberIdByName, userIdByEmail) {
+async function upsertReviews(client, barberIdByName, userIdByPhone) {
   for (const review of reviewSeeds) {
     const barberId = barberIdByName.get(review.barberName);
     if (!barberId) {
       continue;
     }
 
-    const userId = userIdByEmail.get(review.userEmail) || null;
+    const userId = userIdByPhone.get(review.userPhone) || null;
     await client.query(
       `
       INSERT INTO reviews (barber_id, user_id, author_name, rating, comment, created_at)
@@ -618,7 +614,7 @@ async function refreshBarberRatings(client) {
 }
 
 async function resetDemoData(client) {
-  await client.query('TRUNCATE bookings, slots, reviews RESTART IDENTITY');
+  await client.query('TRUNCATE cart_items, bookings, slots, reviews RESTART IDENTITY');
 }
 
 async function refreshSeeds(options = {}) {
@@ -635,8 +631,8 @@ async function refreshSeeds(options = {}) {
     const barberIdByName = await upsertBarbers(client, salonIdByCode);
     await upsertServices(client);
     await upsertProducts(client);
-    const userIdByEmail = await upsertUsers(client);
-    await upsertReviews(client, barberIdByName, userIdByEmail);
+    const userIdByPhone = await upsertUsers(client);
+    await upsertReviews(client, barberIdByName, userIdByPhone);
     await seedSlots(client, barberIdByName);
     await refreshBarberRatings(client);
 

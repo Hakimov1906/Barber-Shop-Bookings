@@ -82,7 +82,6 @@
         "type": "object",
         "required": [
           "fullName",
-          "email",
           "phone",
           "password"
         ],
@@ -92,16 +91,14 @@
             "minLength": 2,
             "maxLength": 120
           },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^\\+996\\d{9}$"
           },
           "password": {
             "type": "string",
-            "minLength": 6
+            "minLength": 6,
+            "maxLength": 50
           }
         }
       },
@@ -110,7 +107,6 @@
         "required": [
           "id",
           "fullName",
-          "email",
           "phone"
         ],
         "properties": {
@@ -120,12 +116,9 @@
           "fullName": {
             "type": "string"
           },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^\\+996\\d{9}$"
           }
         }
       },
@@ -134,7 +127,6 @@
         "required": [
           "id",
           "full_name",
-          "email",
           "phone",
           "created_at"
         ],
@@ -145,12 +137,9 @@
           "full_name": {
             "type": "string"
           },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^\\+996\\d{9}$"
           },
           "created_at": {
             "type": "string",
@@ -172,13 +161,13 @@
       "UserLoginRequest": {
         "type": "object",
         "required": [
-          "email",
+          "phone",
           "password"
         ],
         "properties": {
-          "email": {
+          "phone": {
             "type": "string",
-            "format": "email"
+            "pattern": "^\\+996\\d{9}$"
           },
           "password": {
             "type": "string"
@@ -486,7 +475,6 @@
               "required": [
                 "id",
                 "full_name",
-                "email",
                 "phone",
                 "created_at"
               ],
@@ -497,12 +485,9 @@
                 "full_name": {
                   "type": "string"
                 },
-                "email": {
-                  "type": "string",
-                  "format": "email"
-                },
                 "phone": {
-                  "type": "string"
+                  "type": "string",
+                  "pattern": "^\\+996\\d{9}$"
                 },
                 "created_at": {
                   "type": "string",
@@ -636,7 +621,7 @@
           "comment": {
             "type": "string",
             "minLength": 5,
-            "maxLength": 1000
+            "maxLength": 150
           }
         }
       },
@@ -751,12 +736,9 @@
             "minLength": 2,
             "maxLength": 120
           },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
           "phone": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^\\+996\\d{9}$"
           }
         }
       },
@@ -837,7 +819,8 @@
           },
           "newPassword": {
             "type": "string",
-            "minLength": 6
+            "minLength": 6,
+            "maxLength": 50
           }
         }
       },
@@ -851,6 +834,77 @@
             "type": "string",
             "enum": [
               "password_updated"
+            ]
+          }
+        }
+      },
+      "CartItem": {
+        "type": "object",
+        "required": [
+          "product_id",
+          "quantity",
+          "name",
+          "price",
+          "image_url"
+        ],
+        "properties": {
+          "product_id": {
+            "type": "integer"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "string"
+          },
+          "image_url": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CartResponse": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CartItem"
+            }
+          }
+        }
+      },
+      "CartItemUpsertRequest": {
+        "type": "object",
+        "required": [
+          "quantity"
+        ],
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "CartStatusResponse": {
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "updated",
+              "removed",
+              "cleared"
             ]
           }
         }
@@ -1980,7 +2034,7 @@
             }
           },
           "409": {
-            "description": "Email or phone already in use",
+            "description": "Phone already in use",
             "content": {
               "application/json": {
                 "schema": {
@@ -2057,6 +2111,194 @@
           },
           "401": {
             "description": "Invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cart/me": {
+      "get": {
+        "summary": "Get own cart",
+        "operationId": "getMyCart",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Clear own cart",
+        "operationId": "clearMyCart",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cleared",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartStatusResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/cart/me/items/{productId}": {
+      "put": {
+        "summary": "Set product quantity in own cart",
+        "operationId": "setMyCartItem",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartItemUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove product from own cart",
+        "operationId": "removeMyCartItem",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid product id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {

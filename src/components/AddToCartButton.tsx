@@ -12,13 +12,16 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
   const { addToCart } = useCart();
   const { tr } = useI18n();
 
-  const handleClick = () => {
-    addToCart({
+  const handleClick = async () => {
+    const success = await addToCart({
       id: product.id,
       name: product.name,
       price: product.price,
       image: product.image,
     });
+    if (!success) {
+      return;
+    }
 
     if (toast && typeof toast.success === "function") {
       toast.success(tr("cart.added", { item: product.name }));
@@ -36,7 +39,7 @@ const AddToCartButton = ({ product, className = "" }: AddToCartButtonProps) => {
   return (
     <button
       type="button"
-      onClick={handleClick}
+      onClick={() => void handleClick()}
       className={className}
       aria-label={`${tr("products.addtocart")} ${product.name}`}
     >

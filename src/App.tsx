@@ -18,7 +18,6 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ProfileInfo = lazy(() => import("./pages/ProfileInfo"));
 const ProfileOrders = lazy(() => import("./pages/ProfileOrders"));
-const ProfileRecords = lazy(() => import("./pages/ProfileRecords"));
 const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -49,7 +48,7 @@ const App = () => (
                     <Route path="/profile" element={<Profile />}>
                       <Route index element={<ProfileInfo />} />
                       <Route path="orders" element={<ProfileOrders />} />
-                      <Route path="records" element={<ProfileRecords />} />
+                      <Route path="records" element={<Navigate to="/profile/orders" replace />} />
                       <Route path="settings" element={<ProfileSettings />} />
                     </Route>
                   </Route>

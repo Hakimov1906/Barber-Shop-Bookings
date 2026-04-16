@@ -1,17 +1,21 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type KeyboardEvent } from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, User, Phone, ArrowRight } from "lucide-react";
+import { Lock, User, Phone, ArrowRight } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+import {
+  KG_PHONE_PREFIX,
+  KG_PHONE_TOTAL_LENGTH,
+  normalizeKgPhoneInput,
+} from "@/lib/phone";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState(KG_PHONE_PREFIX);
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -30,12 +34,11 @@ const Auth = () => {
     setIsSubmitting(true);
     try {
       if (isLogin) {
-        await login(email.trim(), password);
+        await login(phone.trim(), password);
       } else {
         await register({
           fullName: fullName.trim(),
           phone: phone.trim(),
-          email: email.trim(),
           password,
         });
       }
@@ -54,6 +57,22 @@ const Auth = () => {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setPhone(normalizeKgPhoneInput(value));
+  };
+
+  const handlePhoneKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    const selectionStart = event.currentTarget.selectionStart ?? 0;
+    const selectionEnd = event.currentTarget.selectionEnd ?? 0;
+    const affectsPrefix =
+      (event.key === "Backspace" && selectionStart <= KG_PHONE_PREFIX.length) ||
+      (event.key === "Delete" && selectionStart < KG_PHONE_PREFIX.length);
+
+    if (affectsPrefix && selectionStart === selectionEnd) {
+      event.preventDefault();
     }
   };
 
@@ -99,40 +118,32 @@ const Auth = () => {
           <div className="p-6 sm:p-8">
             <form className="space-y-4" onSubmit={handleSubmit}>
               {!isLogin && (
-                <>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <input
-                      value={fullName}
-                      onChange={(event) => setFullName(event.target.value)}
-                      required
-                      type="text"
-                      placeholder={tr("auth.field.fullName")}
-                      className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
-                    />
-                  </div>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <input
-                      value={phone}
-                      onChange={(event) => setPhone(event.target.value)}
-                      required
-                      type="tel"
-                      placeholder={tr("auth.field.phone.placeholder")}
-                      className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
-                    />
-                  </div>
-                </>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    value={fullName}
+                    onChange={(event) => setFullName(event.target.value)}
+                    required
+                    type="text"
+                    placeholder={tr("auth.field.fullName")}
+                    className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
+                  />
+                </div>
               )}
 
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
+                  value={phone}
+                  onChange={(event) => handlePhoneChange(event.target.value)}
+                  onKeyDown={handlePhoneKeyDown}
+                  onFocus={() => setPhone((current) => normalizeKgPhoneInput(current))}
                   required
-                  type="email"
-                  placeholder={tr("auth.field.email")}
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={KG_PHONE_TOTAL_LENGTH}
+                  pattern="^\+996\d{9}$"
+                  placeholder={tr("auth.field.phone.placeholder")}
                   className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
                 />
               </div>
@@ -144,6 +155,7 @@ const Auth = () => {
                   onChange={(event) => setPassword(event.target.value)}
                   required
                   minLength={6}
+                  maxLength={50}
                   type="password"
                   placeholder={tr("auth.field.password")}
                   className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"

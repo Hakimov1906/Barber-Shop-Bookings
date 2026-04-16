@@ -78,7 +78,6 @@ describe("Booking flow", () => {
         user: {
           id: 1,
           fullName: "Booking User",
-          email: "booking@example.com",
           phone: "+996700000001",
         },
       }),

@@ -28,7 +28,6 @@ describe("Profile orders flow", () => {
         user: {
           id: 1,
           fullName: "Test User",
-          email: "test@example.com",
           phone: "+996700000001",
         },
       }),

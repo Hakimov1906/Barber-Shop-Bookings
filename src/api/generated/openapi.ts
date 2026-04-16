@@ -383,6 +383,42 @@ export interface paths {
         patch: operations["updateMyPassword"];
         trace?: never;
     };
+    "/api/cart/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get own cart */
+        get: operations["getMyCart"];
+        put?: never;
+        post?: never;
+        /** Clear own cart */
+        delete: operations["clearMyCart"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/cart/me/items/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set product quantity in own cart */
+        put: operations["setMyCartItem"];
+        post?: never;
+        /** Remove product from own cart */
+        delete: operations["removeMyCartItem"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -405,23 +441,17 @@ export interface components {
         };
         RegisterRequest: {
             fullName: string;
-            /** Format: email */
-            email: string;
             phone: string;
             password: string;
         };
         UserPublic: {
             id: number;
             fullName: string;
-            /** Format: email */
-            email: string;
             phone: string;
         };
         UserPublicSnake: {
             id: number;
             full_name: string;
-            /** Format: email */
-            email: string;
             phone: string;
             /** Format: date-time */
             created_at: string;
@@ -430,8 +460,7 @@ export interface components {
             user: components["schemas"]["UserPublicSnake"];
         };
         UserLoginRequest: {
-            /** Format: email */
-            email: string;
+            phone: string;
             password: string;
         };
         UserLoginResponse: {
@@ -517,8 +546,6 @@ export interface components {
             items: {
                 id: number;
                 full_name: string;
-                /** Format: email */
-                email: string;
                 phone: string;
                 /** Format: date-time */
                 created_at: string;
@@ -588,8 +615,6 @@ export interface components {
         };
         UserProfileUpdateRequest: {
             fullName?: string;
-            /** Format: email */
-            email?: string;
             phone?: string;
         };
         UserProfileUpdateResponse: {
@@ -617,6 +642,23 @@ export interface components {
         UserPasswordUpdateResponse: {
             /** @enum {string} */
             status: "password_updated";
+        };
+        CartItem: {
+            product_id: number;
+            quantity: number;
+            name: string;
+            price: string;
+            image_url: string | null;
+        };
+        CartResponse: {
+            items: components["schemas"]["CartItem"][];
+        };
+        CartItemUpsertRequest: {
+            quantity: number;
+        };
+        CartStatusResponse: {
+            /** @enum {string} */
+            status: "updated" | "removed" | "cleared";
         };
     };
     responses: never;
@@ -1453,7 +1495,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description Email or phone already in use */
+            /** @description Phone already in use */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -1496,6 +1538,157 @@ export interface operations {
                 };
             };
             /** @description Invalid token */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getMyCart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    clearMyCart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cleared */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartStatusResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    setMyCartItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CartItemUpsertRequest"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartStatusResponse"];
+                };
+            };
+            /** @description Invalid payload */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ValidationErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Product not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    removeMyCartItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartStatusResponse"];
+                };
+            };
+            /** @description Invalid product id */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unauthorized */
             401: {
                 headers: {
                     [name: string]: unknown;

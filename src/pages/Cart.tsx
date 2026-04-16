@@ -9,7 +9,7 @@ type CartProps = {
 
 const Cart = ({ isEmbedded = false }: CartProps) => {
   const { tr, price } = useI18n();
-  const { items, totalPrice, increaseQuantity, decreaseQuantity, removeFromCart, clearCart } =
+  const { items, totalPrice, increaseQuantity, decreaseQuantity, removeFromCart, clearCart, isLoading } =
     useCart();
 
   const emptyContent = (
@@ -40,7 +40,7 @@ const Cart = ({ isEmbedded = false }: CartProps) => {
             <h1 className="section-title">{tr("cart.page.title")}</h1>
             <p className="section-subtitle">{tr("cart.page.subtitle")}</p>
           </div>
-          <Button variant="secondary" onClick={clearCart}>
+          <Button variant="secondary" onClick={() => void clearCart()} disabled={isLoading}>
             {tr("cart.clear")}
           </Button>
         </div>
@@ -62,17 +62,32 @@ const Cart = ({ isEmbedded = false }: CartProps) => {
 
               <div className="flex flex-col gap-3 sm:items-end">
                 <div className="inline-flex items-center rounded-full border border-border bg-secondary p-1">
-                  <Button variant="outline" size="sm" onClick={() => decreaseQuantity(item.id)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void decreaseQuantity(item.id)}
+                    disabled={isLoading}
+                  >
                     -
                   </Button>
                   <span className="min-w-[2rem] px-2 text-center text-sm font-medium">
                     {item.quantity}
                   </span>
-                  <Button variant="outline" size="sm" onClick={() => increaseQuantity(item.id)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => void increaseQuantity(item.id)}
+                    disabled={isLoading}
+                  >
                     +
                   </Button>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => removeFromCart(item.id)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => void removeFromCart(item.id)}
+                  disabled={isLoading}
+                >
                   {tr("cart.remove")}
                 </Button>
               </div>
@@ -93,7 +108,7 @@ const Cart = ({ isEmbedded = false }: CartProps) => {
             <p className="mt-1 text-3xl font-semibold">{price(totalPrice)}</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button variant="secondary" onClick={clearCart}>
+            <Button variant="secondary" onClick={() => void clearCart()} disabled={isLoading}>
               {tr("cart.clear")}
             </Button>
             <Button>{tr("cart.checkout")}</Button>

@@ -29,10 +29,10 @@ function randomTimes(count) {
 
 const slotDate = '2099-12-31';
 const slotTimes = randomTimes(4);
-const email = `integration-${Date.now()}@example.com`;
 const phone = `+996700${String(Date.now()).slice(-6)}`;
 const password = 'password123';
 const updatedPassword = 'password456';
+const tooLongPassword = 'p'.repeat(51);
 
 let userToken = '';
 let adminToken = '';
@@ -82,17 +82,16 @@ test('register, login and create booking flow', async (t) => {
     .post('/api/auth/register')
     .send({
       fullName: 'Integration User',
-      email,
       phone,
       password
     });
 
   assert.equal(registerResponse.statusCode, 201);
-  assert.equal(registerResponse.body.user.email, email);
+  assert.equal(registerResponse.body.user.phone, phone);
 
   const loginResponse = await request(app)
     .post('/api/auth/login')
-    .send({ email, password });
+    .send({ phone, password });
 
   assert.equal(loginResponse.statusCode, 200);
   assert.ok(loginResponse.body.token);
@@ -145,6 +144,50 @@ test('register, login and create booking flow', async (t) => {
     });
 
   assert.equal(secondBookingResponse.statusCode, 409);
+});
+
+test('rejects legacy email login payload and invalid phone format', async (t) => {
+  if (skipIfDbUnavailable(t)) return;
+
+  const invalidLoginPayloadResponse = await request(app)
+    .post('/api/auth/login')
+    .send({ email: 'legacy@example.com', password });
+
+  assert.equal(invalidLoginPayloadResponse.statusCode, 400);
+
+  const invalidPhoneRegisterResponse = await request(app)
+    .post('/api/auth/register')
+    .send({
+      fullName: 'Invalid Phone User',
+      phone: '+99670012345',
+      password
+    });
+
+  assert.equal(invalidPhoneRegisterResponse.statusCode, 400);
+});
+
+test('enforces password max length for register and password update', async (t) => {
+  if (skipIfDbUnavailable(t)) return;
+
+  const registerTooLongPasswordResponse = await request(app)
+    .post('/api/auth/register')
+    .send({
+      fullName: 'Long Password User',
+      phone: '+996700999999',
+      password: tooLongPassword
+    });
+
+  assert.equal(registerTooLongPasswordResponse.statusCode, 400);
+
+  const passwordTooLongResponse = await request(app)
+    .patch('/api/users/me/password')
+    .set('Authorization', `Bearer ${userToken}`)
+    .send({
+      currentPassword: password,
+      newPassword: tooLongPassword
+    });
+
+  assert.equal(passwordTooLongResponse.statusCode, 400);
 });
 
 test('enforces max active bookings per user and allows booking after cancel', async (t) => {
@@ -212,7 +255,7 @@ test('user can change password and login with new credentials', async (t) => {
 
   const loginWithCurrentPasswordResponse = await request(app)
     .post('/api/auth/login')
-    .send({ email, password });
+    .send({ phone, password });
 
   assert.equal(loginWithCurrentPasswordResponse.statusCode, 200);
 
@@ -249,13 +292,13 @@ test('user can change password and login with new credentials', async (t) => {
 
   const loginWithOldPasswordResponse = await request(app)
     .post('/api/auth/login')
-    .send({ email, password });
+    .send({ phone, password });
 
   assert.equal(loginWithOldPasswordResponse.statusCode, 401);
 
   const loginWithNewPasswordResponse = await request(app)
     .post('/api/auth/login')
-    .send({ email, password: updatedPassword });
+    .send({ phone, password: updatedPassword });
 
   assert.equal(loginWithNewPasswordResponse.statusCode, 200);
   assert.ok(loginWithNewPasswordResponse.body.token);
@@ -288,6 +331,17 @@ test('user can create and update own barber review', async (t) => {
   assert.equal(updateReviewResponse.statusCode, 200);
   assert.equal(Number(updateReviewResponse.body.review.rating), 4);
   assert.equal(updateReviewResponse.body.barber.id, barberId);
+
+  const longComment = 'x'.repeat(151);
+  const tooLongCommentResponse = await request(app)
+    .post(`/api/barbers/${barberId}/reviews`)
+    .set('Authorization', `Bearer ${userToken}`)
+    .send({
+      rating: 4,
+      comment: longComment
+    });
+
+  assert.equal(tooLongCommentResponse.statusCode, 400);
 
   const barbersResponse = await request(app).get('/api/barbers');
   assert.equal(barbersResponse.statusCode, 200);
@@ -324,7 +378,7 @@ test('user can view profile, list own bookings and cancel booking', async (t) =>
     .set('Authorization', `Bearer ${userToken}`);
 
   assert.equal(profileResponse.statusCode, 200);
-  assert.equal(profileResponse.body.email, email);
+  assert.equal(profileResponse.body.phone, phone);
 
   const updateResponse = await request(app)
     .patch('/api/users/me')
@@ -360,6 +414,56 @@ test('user can view profile, list own bookings and cancel booking', async (t) =>
   );
 });
 
+test('cart endpoints allow add/update/remove/clear for authorized user', async (t) => {
+  if (skipIfDbUnavailable(t)) return;
+
+  const productResult = await pool.query(
+    'SELECT id FROM products WHERE is_active = true ORDER BY id LIMIT 1'
+  );
+  assert.ok(productResult.rowCount);
+  const productId = productResult.rows[0].id;
+
+  const setItemResponse = await request(app)
+    .put(`/api/cart/me/items/${productId}`)
+    .set('Authorization', `Bearer ${userToken}`)
+    .send({ quantity: 2 });
+  assert.equal(setItemResponse.statusCode, 200);
+
+  const getCartResponse = await request(app)
+    .get('/api/cart/me')
+    .set('Authorization', `Bearer ${userToken}`);
+  assert.equal(getCartResponse.statusCode, 200);
+  assert.ok(Array.isArray(getCartResponse.body.items));
+  assert.ok(
+    getCartResponse.body.items.some(
+      (item) => item.product_id === productId && item.quantity === 2
+    )
+  );
+
+  const invalidQuantityResponse = await request(app)
+    .put(`/api/cart/me/items/${productId}`)
+    .set('Authorization', `Bearer ${userToken}`)
+    .send({ quantity: 0 });
+  assert.equal(invalidQuantityResponse.statusCode, 400);
+
+  const removeItemResponse = await request(app)
+    .delete(`/api/cart/me/items/${productId}`)
+    .set('Authorization', `Bearer ${userToken}`);
+  assert.equal(removeItemResponse.statusCode, 200);
+
+  const clearCartResponse = await request(app)
+    .delete('/api/cart/me')
+    .set('Authorization', `Bearer ${userToken}`);
+  assert.equal(clearCartResponse.statusCode, 200);
+});
+
+test('cart endpoints require auth', async (t) => {
+  if (skipIfDbUnavailable(t)) return;
+
+  const unauthorizedGetResponse = await request(app).get('/api/cart/me');
+  assert.equal(unauthorizedGetResponse.statusCode, 401);
+});
+
 test.after(async () => {
   if (!dbReady) {
     await pool.end();
@@ -369,10 +473,11 @@ test.after(async () => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    const userResult = await client.query('SELECT id FROM users WHERE email = $1', [email]);
+    const userResult = await client.query('SELECT id FROM users WHERE phone = $1', [phone]);
     const userId = userResult.rowCount ? userResult.rows[0].id : null;
 
     if (userId) {
+      await client.query('DELETE FROM cart_items WHERE user_id = $1', [userId]);
       await client.query('DELETE FROM reviews WHERE user_id = $1', [userId]);
     }
 
@@ -384,7 +489,7 @@ test.after(async () => {
       'DELETE FROM slots WHERE date = $1 AND barber_id = $2 AND time = ANY($3::time[])',
       [slotDate, barberId, slotTimes]
     );
-    await client.query('DELETE FROM users WHERE email = $1', [email]);
+    await client.query('DELETE FROM users WHERE phone = $1', [phone]);
     await client.query('COMMIT');
   } catch (err) {
     await client.query('ROLLBACK');

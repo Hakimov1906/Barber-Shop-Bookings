@@ -339,45 +339,41 @@ WHERE name NOT IN (
   'Volume Powder'
 );
 
-INSERT INTO users (full_name, email, phone, password_hash)
+INSERT INTO users (full_name, phone, password_hash)
 VALUES
   (
     'Ivan Petrov',
-    'ivan.petrov@example.com',
     '+996555100001',
     '$2a$10$cl7uvxDsDH./lX07w3Zn1.vbRUnDpV40RjaOftlMNKdLPWfUOJw9i'
   ),
   (
     'Aida User',
-    'aida.user@example.com',
     '+996555100002',
     '$2a$10$cl7uvxDsDH./lX07w3Zn1.vbRUnDpV40RjaOftlMNKdLPWfUOJw9i'
   ),
   (
     'Test Client',
-    'test.client@example.com',
     '+996555100003',
     '$2a$10$2zOm8J.QW7vLlj3D4BYmSuw2J58iPFteVwJJ0EcVh4PeTRkp58DOq'
   )
-ON CONFLICT (email) DO UPDATE SET
+ON CONFLICT (phone) DO UPDATE SET
   full_name = EXCLUDED.full_name,
-  phone = EXCLUDED.phone,
   password_hash = EXCLUDED.password_hash;
 
-WITH review_data(barber_name, user_email, author_name, rating, comment, created_at) AS (
+WITH review_data(barber_name, user_phone, author_name, rating, comment, created_at) AS (
   VALUES
-    ('Timur Karimov', 'ivan.petrov@example.com', 'Ivan Petrov', 5.0, 'Very clean fade, exactly as requested.', '2026-03-01T10:20:00Z'::timestamptz),
-    ('Timur Karimov', 'aida.user@example.com', 'Aida User', 4.8, 'Fast service and good attention to detail.', '2026-03-04T12:15:00Z'::timestamptz),
-    ('Aida Omurbekova', 'test.client@example.com', 'Test Client', 4.9, 'Loved the styling tips, very practical.', '2026-03-05T16:05:00Z'::timestamptz),
-    ('Elena Petrova', 'ivan.petrov@example.com', 'Ivan Petrov', 5.0, 'Color result looks natural and healthy.', '2026-03-08T14:40:00Z'::timestamptz),
-    ('Nursultan Imanov', 'aida.user@example.com', 'Aida User', 4.6, 'Trim and contour were accurate, will come back.', '2026-03-09T09:30:00Z'::timestamptz),
-    ('Madina Ryskulova', 'test.client@example.com', 'Test Client', 4.8, 'Great volume and the hairstyle lasted all day.', '2026-03-12T11:10:00Z'::timestamptz)
+    ('Timur Karimov', '+996555100001', 'Ivan Petrov', 5.0, 'Very clean fade, exactly as requested.', '2026-03-01T10:20:00Z'::timestamptz),
+    ('Timur Karimov', '+996555100002', 'Aida User', 4.8, 'Fast service and good attention to detail.', '2026-03-04T12:15:00Z'::timestamptz),
+    ('Aida Omurbekova', '+996555100003', 'Test Client', 4.9, 'Loved the styling tips, very practical.', '2026-03-05T16:05:00Z'::timestamptz),
+    ('Elena Petrova', '+996555100001', 'Ivan Petrov', 5.0, 'Color result looks natural and healthy.', '2026-03-08T14:40:00Z'::timestamptz),
+    ('Nursultan Imanov', '+996555100002', 'Aida User', 4.6, 'Trim and contour were accurate, will come back.', '2026-03-09T09:30:00Z'::timestamptz),
+    ('Madina Ryskulova', '+996555100003', 'Test Client', 4.8, 'Great volume and the hairstyle lasted all day.', '2026-03-12T11:10:00Z'::timestamptz)
 )
 INSERT INTO reviews (barber_id, user_id, author_name, rating, comment, created_at)
 SELECT b.id, u.id, rd.author_name, rd.rating, rd.comment, rd.created_at
 FROM review_data rd
 JOIN barbers b ON b.name = rd.barber_name
-LEFT JOIN users u ON u.email = rd.user_email
+LEFT JOIN users u ON u.phone = rd.user_phone
 ON CONFLICT (barber_id, author_name, comment) DO UPDATE SET
   rating = EXCLUDED.rating,
   created_at = EXCLUDED.created_at;

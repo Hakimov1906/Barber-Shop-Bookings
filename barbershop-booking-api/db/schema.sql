@@ -83,13 +83,11 @@ CREATE TABLE IF NOT EXISTS products (
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   full_name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
-  phone TEXT NOT NULL UNIQUE,
+  phone TEXT NOT NULL UNIQUE CHECK (phone ~ '^\+996\d{9}$'),
   password_hash TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS users_email_idx ON users(email);
 CREATE INDEX IF NOT EXISTS salons_active_idx ON salons(is_active);
 CREATE INDEX IF NOT EXISTS salons_sort_order_idx ON salons(sort_order);
 CREATE INDEX IF NOT EXISTS barbers_salon_idx ON barbers(salon_id);
@@ -122,6 +120,15 @@ CREATE TABLE IF NOT EXISTS bookings (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS cart_items (
+  user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  product_id INT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  quantity INT NOT NULL CHECK (quantity > 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (user_id, product_id)
+);
+
 CREATE TABLE IF NOT EXISTS reviews (
   id SERIAL PRIMARY KEY,
   barber_id INT NOT NULL REFERENCES barbers(id) ON DELETE CASCADE,
@@ -141,3 +148,4 @@ CREATE INDEX IF NOT EXISTS slots_date_idx ON slots(date);
 CREATE INDEX IF NOT EXISTS reviews_barber_idx ON reviews(barber_id);
 CREATE INDEX IF NOT EXISTS reviews_created_at_idx ON reviews(created_at DESC);
 CREATE UNIQUE INDEX IF NOT EXISTS reviews_barber_user_uidx ON reviews(barber_id, user_id) WHERE user_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS cart_items_user_idx ON cart_items(user_id);

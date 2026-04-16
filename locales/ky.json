@@ -18,7 +18,7 @@
   "hero.locations": "Салондор",
   "hero.hours": "09:00 - 21:00",
   "hero.openHours": "Күнүгө 09:00 — 21:00",
-  "hero.locationCount": "{count} салон",
+  "hero.locationCount": "{{count}} салон",
   "hero.tagline": "Премиум барбер тажрыйбасы",
   "home.about.title": "Биз жөнүндө",
   "home.about.heading": "Ар бир жолугушууда кооз кыркуулар жана премиум кам көрүү.",
@@ -144,7 +144,7 @@
   "auth.register.subtitle": "Мастерге жазылуу үчүн аккаунт түзүңүз.",
   "auth.field.fullName": "Аты-жөнү",
   "auth.field.phone": "Телефон",
-  "auth.field.phone.placeholder": "+996700000000",
+  "auth.field.phone.placeholder": "+996000000000",
   "auth.field.email": "Email",
   "auth.field.password": "Сырсөз",
   "auth.submit.wait": "Күтүңүз...",
@@ -280,5 +280,8 @@
   "service.highlights": "Мелирование",
   "service.balayage": "Балаяж",
   "service.hair_treatment": "Чачка кам көрүү",
-  "currency": "сом"
+  "currency": "сом",
+  "profile.settings.password.error.maxLength": "???? ?????? 50 ???????? ??????? ?????.",
+  "cart.error.load": "??????? ?????? ?????? ?????? ???.",
+  "cart.error.update": "??????? ???????? ?????? ?????? ???."
 }

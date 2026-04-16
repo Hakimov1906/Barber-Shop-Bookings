@@ -1,17 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { KeyRound, Save } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { ApiError, api } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
+import {
+  KG_PHONE_PREFIX,
+  KG_PHONE_TOTAL_LENGTH,
+  normalizeKgPhoneInput,
+} from "@/lib/phone";
 
 const ProfileSettings = () => {
   const { user, token, syncUser } = useAuth();
   const { tr } = useI18n();
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(KG_PHONE_PREFIX);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
@@ -19,7 +23,6 @@ const ProfileSettings = () => {
   useEffect(() => {
     if (!user) return;
     setFullName(user.fullName);
-    setEmail(user.email);
     setPhone(user.phone);
   }, [user]);
 
@@ -27,20 +30,37 @@ const ProfileSettings = () => {
     if (!user) return false;
     return (
       fullName.trim() !== user.fullName ||
-      email.trim().toLowerCase() !== user.email.toLowerCase() ||
       phone.trim() !== user.phone
     );
-  }, [user, fullName, email, phone]);
+  }, [user, fullName, phone]);
 
   const currentPasswordValue = currentPassword.trim();
   const passwordTooShort = newPassword.length > 0 && newPassword.length < 6;
+  const passwordTooLong = newPassword.length > 50;
   const passwordMismatch = repeatPassword.length > 0 && newPassword !== repeatPassword;
   const canSubmitPassword = Boolean(
     currentPasswordValue &&
       newPassword.length >= 6 &&
+      newPassword.length <= 50 &&
       repeatPassword &&
       newPassword === repeatPassword,
   );
+
+  const handlePhoneChange = (value: string) => {
+    setPhone(normalizeKgPhoneInput(value));
+  };
+
+  const handlePhoneKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    const selectionStart = event.currentTarget.selectionStart ?? 0;
+    const selectionEnd = event.currentTarget.selectionEnd ?? 0;
+    const affectsPrefix =
+      (event.key === "Backspace" && selectionStart <= KG_PHONE_PREFIX.length) ||
+      (event.key === "Delete" && selectionStart < KG_PHONE_PREFIX.length);
+
+    if (affectsPrefix && selectionStart === selectionEnd) {
+      event.preventDefault();
+    }
+  };
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -48,16 +68,12 @@ const ProfileSettings = () => {
         throw new ApiError("Sign in required", 401);
       }
 
-      const payload: { fullName?: string; email?: string; phone?: string } = {};
+      const payload: { fullName?: string; phone?: string } = {};
       const fullNameValue = fullName.trim();
-      const emailValue = email.trim().toLowerCase();
-      const phoneValue = phone.trim();
+      const phoneValue = normalizeKgPhoneInput(phone);
 
       if (fullNameValue !== user.fullName) {
         payload.fullName = fullNameValue;
-      }
-      if (emailValue !== user.email.toLowerCase()) {
-        payload.email = emailValue;
       }
       if (phoneValue !== user.phone) {
         payload.phone = phoneValue;
@@ -69,7 +85,6 @@ const ProfileSettings = () => {
       syncUser({
         id: response.user.id,
         fullName: response.user.full_name,
-        email: response.user.email,
         phone: response.user.phone,
       });
       toast({
@@ -93,6 +108,9 @@ const ProfileSettings = () => {
     mutationFn: async () => {
       if (!token) {
         throw new ApiError("Sign in required", 401);
+      }
+      if (passwordTooLong) {
+        throw new ApiError("Invalid payload", 400);
       }
 
       return api.updatePassword(token, {
@@ -164,23 +182,6 @@ const ProfileSettings = () => {
 
           <div>
             <label
-              htmlFor="profile-email"
-              className="mb-2 block text-xs uppercase tracking-wide text-muted-foreground"
-            >
-              {tr("profile.field.email")}
-            </label>
-            <input
-              id="profile-email"
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
-              required
-            />
-          </div>
-
-          <div>
-            <label
               htmlFor="profile-phone"
               className="mb-2 block text-xs uppercase tracking-wide text-muted-foreground"
             >
@@ -189,7 +190,13 @@ const ProfileSettings = () => {
             <input
               id="profile-phone"
               value={phone}
-              onChange={(event) => setPhone(event.target.value)}
+              onChange={(event) => handlePhoneChange(event.target.value)}
+              onKeyDown={handlePhoneKeyDown}
+              onFocus={() => setPhone((current) => normalizeKgPhoneInput(current))}
+              type="tel"
+              inputMode="numeric"
+              maxLength={KG_PHONE_TOTAL_LENGTH}
+              pattern="^\+996\d{9}$"
               className="h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
               required
             />
@@ -253,12 +260,18 @@ const ProfileSettings = () => {
               onChange={(event) => setNewPassword(event.target.value)}
               className="h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
               minLength={6}
+              maxLength={50}
               autoComplete="new-password"
               required
             />
             {passwordTooShort && (
               <p className="mt-1 text-xs text-destructive">
                 {tr("profile.settings.password.error.minLength")}
+              </p>
+            )}
+            {passwordTooLong && (
+              <p className="mt-1 text-xs text-destructive">
+                {tr("profile.settings.password.error.maxLength")}
               </p>
             )}
           </div>
@@ -277,6 +290,7 @@ const ProfileSettings = () => {
               onChange={(event) => setRepeatPassword(event.target.value)}
               className="h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
               minLength={6}
+              maxLength={50}
               autoComplete="new-password"
               required
             />

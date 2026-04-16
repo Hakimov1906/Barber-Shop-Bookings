@@ -11,7 +11,6 @@ import { api } from "@/lib/api";
 interface AuthUser {
   id: number;
   fullName: string;
-  email: string;
   phone: string;
 }
 
@@ -24,10 +23,9 @@ interface AuthContextValue {
   user: AuthUser | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (phone: string, password: string) => Promise<void>;
   register: (payload: {
     fullName: string;
-    email: string;
     phone: string;
     password: string;
   }) => Promise<void>;
@@ -63,14 +61,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = useCallback(
-    async (email: string, password: string) => {
-      const response = await api.login({ email, password });
+    async (phone: string, password: string) => {
+      const response = await api.login({ phone, password });
       persist({
         token: response.token,
         user: {
           id: response.user.id,
           fullName: response.user.fullName,
-          email: response.user.email,
           phone: response.user.phone,
         },
       });
@@ -81,12 +78,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const register = useCallback(
     async (payload: {
       fullName: string;
-      email: string;
       phone: string;
       password: string;
     }) => {
       await api.register(payload);
-      await login(payload.email, payload.password);
+      await login(payload.phone, payload.password);
     },
     [login],
   );

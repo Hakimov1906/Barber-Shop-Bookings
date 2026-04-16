@@ -18,7 +18,7 @@
   "hero.locations": "Салоны",
   "hero.hours": "09:00 - 21:00",
   "hero.openHours": "Открыто ежедневно 09:00 — 21:00",
-  "hero.locationCount": "{count} салонов",
+  "hero.locationCount": "{{count}} салонов",
   "hero.tagline": "Премиальный барбер опыт",
   "home.about.title": "О нас",
   "home.about.heading": "Красивые стрижки и премиальный уход на каждом приеме.",
@@ -144,7 +144,7 @@
   "auth.register.subtitle": "Создайте аккаунт, чтобы записываться к мастеру.",
   "auth.field.fullName": "Имя и фамилия",
   "auth.field.phone": "Телефон",
-  "auth.field.phone.placeholder": "+996700000000",
+  "auth.field.phone.placeholder": "+996000000000",
   "auth.field.email": "Email",
   "auth.field.password": "Пароль",
   "auth.submit.wait": "Подождите...",
@@ -280,5 +280,8 @@
   "service.highlights": "Мелирование",
   "service.balayage": "Балаяж",
   "service.hair_treatment": "Уход за волосами",
-  "currency": "сом"
+  "currency": "сом",
+  "profile.settings.password.error.maxLength": "????? ?????? ?????? ????????? ?? ????? 50 ????????.",
+  "cart.error.load": "?? ??????? ????????? ???????.",
+  "cart.error.update": "?? ??????? ???????? ???????."
 }

@@ -12,31 +12,24 @@ const ProfileInfo = () => {
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
-        <div className="surface-card p-5 card-shadow">
-          <div className="flex items-center gap-3">
-            <User className="h-5 w-5 text-muted-foreground" />
-            <div>
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                {tr("profile.field.fullName")}
-              </p>
-              <p className="text-sm font-medium">{user.fullName}</p>
-            </div>
+      <div className="surface-card p-5 card-shadow">
+        <div className="flex items-center gap-3">
+          <User className="h-5 w-5 text-muted-foreground" />
+          <div>
+            <p className="text-xs uppercase tracking-wide text-muted-foreground">
+              {tr("profile.field.fullName")}
+            </p>
+            <p className="text-sm font-medium">{user.fullName}</p>
           </div>
         </div>
+      </div>
 
-        <div className="surface-card p-5 card-shadow">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            {tr("profile.field.email")}
-          </p>
-          <p className="mt-1 text-sm font-medium break-all">{user.email}</p>
-        </div>
-
-        <div className="surface-card p-5 card-shadow sm:col-span-2">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            {tr("profile.field.phone")}
-          </p>
-          <p className="mt-1 text-sm font-medium">{user.phone}</p>
-        </div>
+      <div className="surface-card p-5 card-shadow">
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">
+          {tr("profile.field.phone")}
+        </p>
+        <p className="mt-1 text-sm font-medium">{user.phone}</p>
+      </div>
     </div>
   );
 };

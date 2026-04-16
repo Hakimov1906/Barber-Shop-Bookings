@@ -2,7 +2,7 @@ const { z } = require('zod');
 
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-const phoneRegex = /^\+?[0-9]{7,20}$/;
+const phoneRegex = /^\+996\d{9}$/;
 
 function normalizeFullName(value) {
   return String(value || '')
@@ -18,21 +18,23 @@ function normalizeEmail(value) {
 
 function normalizePhone(value) {
   const raw = String(value || '').trim();
-  const hasPlus = raw.startsWith('+');
   const digits = raw.replace(/\D/g, '');
 
   if (!digits) {
     return '';
   }
 
-  return hasPlus ? `+${digits}` : digits;
+  if (digits.startsWith('996')) {
+    return `+${digits}`;
+  }
+
+  return `+${digits}`;
 }
 
 function normalizeRegisterPayload(payload = {}) {
   return {
     ...payload,
     fullName: normalizeFullName(payload.fullName),
-    email: normalizeEmail(payload.email),
     phone: normalizePhone(payload.phone)
   };
 }
@@ -40,7 +42,7 @@ function normalizeRegisterPayload(payload = {}) {
 function normalizeUserLoginPayload(payload = {}) {
   return {
     ...payload,
-    email: normalizeEmail(payload.email)
+    phone: normalizePhone(payload.phone)
   };
 }
 
@@ -49,9 +51,6 @@ function normalizeUserProfileUpdatePayload(payload = {}) {
 
   if (typeof payload.fullName !== 'undefined') {
     normalized.fullName = normalizeFullName(payload.fullName);
-  }
-  if (typeof payload.email !== 'undefined') {
-    normalized.email = normalizeEmail(payload.email);
   }
   if (typeof payload.phone !== 'undefined') {
     normalized.phone = normalizePhone(payload.phone);
@@ -94,7 +93,7 @@ const bookingSchema = z.object({
 
 const reviewCreateSchema = z.object({
   rating: z.coerce.number().int().min(1).max(5),
-  comment: z.string().trim().min(5).max(1000)
+  comment: z.string().trim().min(5).max(150)
 });
 
 const loginSchema = z.object({
@@ -104,20 +103,18 @@ const loginSchema = z.object({
 
 const registerSchema = z.object({
   fullName: z.string().min(2).max(120),
-  email: z.string().email(),
   phone: z.string().regex(phoneRegex, 'Invalid phone number'),
-  password: z.string().min(6)
+  password: z.string().min(6).max(50)
 });
 
 const userLoginSchema = z.object({
-  email: z.string().email(),
+  phone: z.string().regex(phoneRegex, 'Invalid phone number'),
   password: z.string().min(1)
 });
 
 const userProfileUpdateSchema = z
   .object({
     fullName: z.string().min(2).max(120).optional(),
-    email: z.string().email().optional(),
     phone: z.string().regex(phoneRegex, 'Invalid phone number').optional()
   })
   .refine((value) => Object.keys(value).length > 0, {
@@ -126,7 +123,7 @@ const userProfileUpdateSchema = z
 
 const userPasswordUpdateSchema = z.object({
   currentPassword: z.string().min(1),
-  newPassword: z.string().min(6)
+  newPassword: z.string().min(6).max(50)
 });
 
 const slotCreateSchema = z.object({

@@ -28,7 +28,6 @@ describe("Profile settings flow", () => {
         user: {
           id: 1,
           fullName: "Test User",
-          email: "test@example.com",
           phone: "+996700000001",
         },
       }),
@@ -40,7 +39,6 @@ describe("Profile settings flow", () => {
       user: {
         id: 1,
         full_name: "Updated User",
-        email: "test@example.com",
         phone: "+996700000001",
         created_at: "2099-01-01T00:00:00.000Z",
       },

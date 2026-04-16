@@ -30,7 +30,6 @@ describe("Auth flow", () => {
       user: {
         id: 7,
         fullName: "John Doe",
-        email: "john@example.com",
         phone: "+996700000001",
       },
     });
@@ -43,8 +42,8 @@ describe("Auth flow", () => {
       { route: "/auth" },
     );
 
-    fireEvent.change(screen.getByPlaceholderText("Email"), {
-      target: { value: " john@example.com " },
+    fireEvent.change(screen.getByPlaceholderText("+996000000000"), {
+      target: { value: "+996700000001" },
     });
     fireEvent.change(screen.getByPlaceholderText("Password"), {
       target: { value: "secret123" },
@@ -53,7 +52,7 @@ describe("Auth flow", () => {
 
     await waitFor(() => {
       expect(mockApi.login).toHaveBeenCalledWith({
-        email: "john@example.com",
+        phone: "+996700000001",
         password: "secret123",
       });
     });
@@ -73,8 +72,8 @@ describe("Auth flow", () => {
       { route: "/auth" },
     );
 
-    fireEvent.change(screen.getByPlaceholderText("Email"), {
-      target: { value: "john@example.com" },
+    fireEvent.change(screen.getByPlaceholderText("+996000000000"), {
+      target: { value: "+996700000001" },
     });
     fireEvent.change(screen.getByPlaceholderText("Password"), {
       target: { value: "wrong-pass" },

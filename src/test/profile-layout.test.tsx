@@ -1,4 +1,4 @@
-﻿import { screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it } from "vitest";
 import Profile from "@/pages/Profile";
@@ -14,7 +14,6 @@ describe("Profile navigation", () => {
         user: {
           id: 1,
           fullName: "Test User",
-          email: "test@example.com",
           phone: "+996700000001",
         },
       }),
