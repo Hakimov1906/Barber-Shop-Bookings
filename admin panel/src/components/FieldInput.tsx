@@ -1,7 +1,7 @@
 import { KeyboardEvent, useMemo, useState } from "react";
 import type { FormFieldConfig } from "../types";
-import { ensureKyrgyzPhonePrefix } from "../utils/phone";
 import { toInputDate, toInputTime } from "../utils/format";
+import { ensureKyrgyzPhonePrefix } from "../utils/phone";
 
 type FieldInputProps = {
   field: FormFieldConfig;
@@ -15,7 +15,15 @@ function toStringValue(value: unknown) {
   return String(value);
 }
 
-function TagInput({ value, disabled, onChange }: { value: unknown; disabled?: boolean; onChange: (next: string[]) => void }) {
+function TagInput({
+  value,
+  disabled,
+  onChange,
+}: {
+  value: unknown;
+  disabled?: boolean;
+  onChange: (next: string[]) => void;
+}) {
   const [draft, setDraft] = useState("");
 
   const tags = useMemo(
@@ -59,11 +67,11 @@ function TagInput({ value, disabled, onChange }: { value: unknown; disabled?: bo
             <button
               type="button"
               className="tag-remove"
-              aria-label={`Удалить тег ${tag}`}
+              aria-label={`Delete tag ${tag}`}
               onClick={() => onChange(tags.filter((item) => item !== tag))}
               disabled={disabled}
             >
-              ×
+              x
             </button>
           </span>
         ))}
@@ -75,7 +83,7 @@ function TagInput({ value, disabled, onChange }: { value: unknown; disabled?: bo
         onBlur={() => pushTag(draft)}
         onKeyDown={onKeyDown}
         disabled={disabled}
-        placeholder="Введите и нажмите Enter"
+        placeholder="Type value and press Enter"
       />
     </div>
   );
@@ -145,8 +153,9 @@ export function FieldInput({ field, value, disabled, onChange }: FieldInputProps
         onChange={(event) => onChange(ensureKyrgyzPhonePrefix(event.target.value))}
         disabled={disabled}
         required={required}
-        pattern="^\+996\d{9}$"
         placeholder="+996000000000"
+        maxLength={13}
+        autoComplete="tel"
       />
     );
   }
@@ -194,4 +203,3 @@ export function FieldInput({ field, value, disabled, onChange }: FieldInputProps
     />
   );
 }
-

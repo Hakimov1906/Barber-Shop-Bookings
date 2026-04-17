@@ -2,7 +2,12 @@ import { FormEvent, useMemo, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ApiError } from "../api";
 import { useAuth } from "../auth";
-import { ensureKyrgyzPhonePrefix, isValidKyrgyzPhone, KYRGYZ_PHONE_PREFIX } from "../utils/phone";
+import {
+  ensureKyrgyzPhonePrefix,
+  isValidKyrgyzPhone,
+  KYRGYZ_PHONE_PREFIX,
+  normalizeKyrgyzPhone,
+} from "../utils/phone";
 
 function formatError(error: unknown) {
   if (error instanceof ApiError) {
@@ -31,7 +36,10 @@ export function LoginPage() {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!isValidKyrgyzPhone(phone)) {
+    const normalizedPhone = normalizeKyrgyzPhone(phone);
+    setPhone(normalizedPhone);
+
+    if (!isValidKyrgyzPhone(normalizedPhone)) {
       setError("Введите телефон в формате +996XXXXXXXXX");
       return;
     }
@@ -39,7 +47,7 @@ export function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await login({ phone, password });
+      await login({ phone: normalizedPhone, password });
       navigate(targetPath, { replace: true });
     } catch (submitError) {
       setError(formatError(submitError));
@@ -70,8 +78,9 @@ export function LoginPage() {
             value={phone}
             onChange={(event) => setPhone(ensureKyrgyzPhonePrefix(event.target.value))}
             inputMode="numeric"
-            pattern="^\\+996\\d{9}$"
             placeholder="+996000000000"
+            maxLength={13}
+            autoComplete="tel"
             required
           />
         </label>
