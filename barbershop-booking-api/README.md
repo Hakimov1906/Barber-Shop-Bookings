@@ -23,10 +23,6 @@ CORS_ORIGIN=http://localhost:8080
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/barbershop
 PGSSL=false
 
-ADMIN_USER=admin_user
-ADMIN_PASSWORD=admin_password
-# ADMIN_PASSWORD_HASH=
-
 JWT_SECRET=12345678901234567890
 JWT_TTL=12h
 MAX_ACTIVE_BOOKINGS_PER_USER=2
@@ -75,10 +71,9 @@ Use `/api/ready` for deploy checks.
 
 1. Login rate limiting is enabled on:
    `POST /api/auth/login`, `POST /api/admin/login`
-2. In production, `ADMIN_PASSWORD_HASH` is required.
-3. JWT rotation is supported via:
+2. JWT rotation is supported via:
    `JWT_SECRETS` or `JWT_SECRET_CURRENT` + `JWT_SECRET_PREVIOUS`
-4. Booking limit is configurable via `MAX_ACTIVE_BOOKINGS_PER_USER` (default: `2`).
+3. Booking limit is configurable via `MAX_ACTIVE_BOOKINGS_PER_USER` (default: `2`).
 
 ## Logging
 
@@ -109,13 +104,24 @@ Public:
 
 Admin:
 
-1. `POST /api/admin/login`
+1. `POST /api/admin/login` (`phone` + `password`)
 2. `GET /api/admin/bookings`
 3. `DELETE /api/admin/bookings/:id`
 4. `GET /api/admin/slots`
 5. `POST /api/admin/slots`
 6. `DELETE /api/admin/slots/:id`
 7. `GET /api/admin/users`
+
+Admin accounts are now stored in the `admins` table. The first admin should be created manually in SQL, for example:
+
+```sql
+INSERT INTO admins (full_name, phone, password_hash)
+VALUES (
+  'Super Admin',
+  '+996700000001',
+  '$2a$10$XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+);
+```
 
 ## Demo Data from Seed
 

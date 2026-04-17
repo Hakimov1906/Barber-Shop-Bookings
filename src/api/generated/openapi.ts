@@ -174,38 +174,226 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/admin/bookings": {
+    "/api/admin/admins": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List bookings */
-        get: operations["getAdminBookings"];
+        /** List admins */
+        get: operations["listAdmins"];
         put?: never;
-        post?: never;
+        /** Create admin */
+        post: operations["createAdmin"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/admin/bookings/{id}": {
+    "/api/admin/admins/{id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get admin by id */
+        get: operations["getAdminById"];
         put?: never;
         post?: never;
-        /** Delete booking */
-        delete: operations["deleteAdminBooking"];
+        /** Delete admin */
+        delete: operations["deleteAdmin"];
+        options?: never;
+        head?: never;
+        /** Update admin */
+        patch: operations["updateAdmin"];
+        trace?: never;
+    };
+    "/api/admin/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List users */
+        get: operations["getAdminUsers"];
+        put?: never;
+        /** Create user */
+        post: operations["createAdminUser"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/admin/users/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get user by id */
+        get: operations["getAdminUserById"];
+        put?: never;
+        post?: never;
+        /** Delete user */
+        delete: operations["deleteAdminUser"];
+        options?: never;
+        head?: never;
+        /** Update user */
+        patch: operations["updateAdminUser"];
+        trace?: never;
+    };
+    "/api/admin/salons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List salons */
+        get: operations["listAdminSalons"];
+        put?: never;
+        /** Create salon */
+        post: operations["createAdminSalon"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/salons/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get salon by id */
+        get: operations["getAdminSalonById"];
+        put?: never;
+        post?: never;
+        /** Delete salon */
+        delete: operations["deleteAdminSalon"];
+        options?: never;
+        head?: never;
+        /** Update salon */
+        patch: operations["updateAdminSalon"];
+        trace?: never;
+    };
+    "/api/admin/barbers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List barbers */
+        get: operations["listAdminBarbers"];
+        put?: never;
+        /** Create barber */
+        post: operations["createAdminBarber"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/barbers/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get barber by id */
+        get: operations["getAdminBarberById"];
+        put?: never;
+        post?: never;
+        /** Delete barber */
+        delete: operations["deleteAdminBarber"];
+        options?: never;
+        head?: never;
+        /** Update barber */
+        patch: operations["updateAdminBarber"];
+        trace?: never;
+    };
+    "/api/admin/services": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List services */
+        get: operations["listAdminServices"];
+        put?: never;
+        /** Create service */
+        post: operations["createAdminService"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/services/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get service by id */
+        get: operations["getAdminServiceById"];
+        put?: never;
+        post?: never;
+        /** Delete service */
+        delete: operations["deleteAdminService"];
+        options?: never;
+        head?: never;
+        /** Update service */
+        patch: operations["updateAdminService"];
+        trace?: never;
+    };
+    "/api/admin/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List products */
+        get: operations["listAdminProducts"];
+        put?: never;
+        /** Create product */
+        post: operations["createAdminProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get product by id */
+        get: operations["getAdminProductById"];
+        put?: never;
+        post?: never;
+        /** Delete product */
+        delete: operations["deleteAdminProduct"];
+        options?: never;
+        head?: never;
+        /** Update product */
+        patch: operations["updateAdminProduct"];
         trace?: never;
     };
     "/api/admin/slots": {
@@ -233,31 +421,127 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get slot by id */
+        get: operations["getAdminSlotById"];
         put?: never;
         post?: never;
         /** Delete slot */
         delete: operations["deleteAdminSlot"];
         options?: never;
         head?: never;
-        patch?: never;
+        /** Update slot */
+        patch: operations["updateAdminSlot"];
         trace?: never;
     };
-    "/api/admin/users": {
+    "/api/admin/bookings": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List users */
-        get: operations["getAdminUsers"];
+        /** List bookings */
+        get: operations["getAdminBookings"];
         put?: never;
-        post?: never;
+        /** Create booking */
+        post: operations["createAdminBooking"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/admin/bookings/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get booking by id */
+        get: operations["getAdminBookingById"];
+        put?: never;
+        post?: never;
+        /** Delete booking */
+        delete: operations["deleteAdminBooking"];
+        options?: never;
+        head?: never;
+        /** Update booking */
+        patch: operations["updateAdminBooking"];
+        trace?: never;
+    };
+    "/api/admin/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List reviews */
+        get: operations["listAdminReviews"];
+        put?: never;
+        /** Create review */
+        post: operations["createAdminReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/reviews/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get review by id */
+        get: operations["getAdminReviewById"];
+        put?: never;
+        post?: never;
+        /** Delete review */
+        delete: operations["deleteAdminReview"];
+        options?: never;
+        head?: never;
+        /** Update review */
+        patch: operations["updateAdminReview"];
+        trace?: never;
+    };
+    "/api/admin/cart-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List cart items */
+        get: operations["listAdminCartItems"];
+        put?: never;
+        /** Create cart item */
+        post: operations["createAdminCartItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/admin/cart-items/{userId}/{productId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get cart item */
+        get: operations["getAdminCartItem"];
+        put?: never;
+        post?: never;
+        /** Delete cart item */
+        delete: operations["deleteAdminCartItem"];
+        options?: never;
+        head?: never;
+        /** Update cart item */
+        patch: operations["updateAdminCartItem"];
         trace?: never;
     };
     "/api/barbers/{id}/reviews": {
@@ -468,11 +752,17 @@ export interface components {
             user: components["schemas"]["UserPublic"];
         };
         AdminLoginRequest: {
-            username: string;
+            phone: string;
             password: string;
+        };
+        AdminPublic: {
+            id: number;
+            full_name: string;
+            phone: string;
         };
         AdminLoginResponse: {
             token: string;
+            admin: components["schemas"]["AdminPublic"];
         };
         Barber: {
             id: number;
@@ -552,6 +842,18 @@ export interface components {
             }[];
             limit: number;
             offset: number;
+        };
+        AdminObject: {
+            [key: string]: unknown;
+        };
+        AdminListAnyResponse: {
+            items: components["schemas"]["AdminObject"][];
+            limit: number;
+            offset: number;
+        };
+        AdminDeleteResponse: {
+            /** @example deleted */
+            status: string;
         };
         SlotCreateRequest: {
             barberId: number;
@@ -1021,11 +1323,11 @@ export interface operations {
             };
         };
     };
-    getAdminBookings: {
+    listAdmins: {
         parameters: {
             query?: {
-                date?: string;
-                barberId?: number;
+                limit?: number;
+                offset?: number;
             };
             header?: never;
             path?: never;
@@ -1039,88 +1341,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AdminBooking"][];
-                };
-            };
-            /** @description Invalid query */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ValidationErrorResponse"];
+                    "application/json": components["schemas"]["AdminListAnyResponse"];
                 };
             };
         };
     };
-    deleteAdminBooking: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Deleted */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        /** @example deleted */
-                        status: string;
-                    };
-                };
-            };
-            /** @description Not found */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    getAdminSlots: {
-        parameters: {
-            query: {
-                date: string;
-                barberId?: number;
-                status?: "available" | "booked" | "blocked";
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Slot"][];
-                };
-            };
-            /** @description Invalid query */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ValidationErrorResponse"];
-                };
-            };
-        };
-    };
-    createAdminSlots: {
+    createAdmin: {
         parameters: {
             query?: never;
             header?: never;
@@ -1129,7 +1355,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SlotCreateRequest"];
+                "application/json": components["schemas"]["AdminObject"];
             };
         };
         responses: {
@@ -1139,21 +1365,34 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SlotCreateResponse"];
-                };
-            };
-            /** @description Invalid payload */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ValidationErrorResponse"];
+                    "application/json": components["schemas"]["AdminObject"];
                 };
             };
         };
     };
-    deleteAdminSlot: {
+    getAdminById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    deleteAdmin: {
         parameters: {
             query?: never;
             header?: never;
@@ -1170,28 +1409,33 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        /** @example deleted */
-                        status: string;
-                    };
+                    "application/json": components["schemas"]["AdminDeleteResponse"];
                 };
             };
-            /** @description Not found */
-            404: {
+        };
+    };
+    updateAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description Slot is booked */
-            409: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["AdminObject"];
                 };
             };
         };
@@ -1224,6 +1468,1023 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ValidationErrorResponse"];
+                };
+            };
+        };
+    };
+    createAdminUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    getAdminUserById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    deleteAdminUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeleteResponse"];
+                };
+            };
+        };
+    };
+    updateAdminUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    listAdminSalons: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"][];
+                };
+            };
+        };
+    };
+    createAdminSalon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    getAdminSalonById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    deleteAdminSalon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeleteResponse"];
+                };
+            };
+        };
+    };
+    updateAdminSalon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    listAdminBarbers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"][];
+                };
+            };
+        };
+    };
+    createAdminBarber: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    getAdminBarberById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    deleteAdminBarber: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeleteResponse"];
+                };
+            };
+        };
+    };
+    updateAdminBarber: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    listAdminServices: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"][];
+                };
+            };
+        };
+    };
+    createAdminService: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    getAdminServiceById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    deleteAdminService: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeleteResponse"];
+                };
+            };
+        };
+    };
+    updateAdminService: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    listAdminProducts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"][];
+                };
+            };
+        };
+    };
+    createAdminProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    getAdminProductById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    deleteAdminProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeleteResponse"];
+                };
+            };
+        };
+    };
+    updateAdminProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    getAdminSlots: {
+        parameters: {
+            query?: {
+                date?: string;
+                barberId?: number;
+                status?: "available" | "booked" | "blocked";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminListAnyResponse"];
+                };
+            };
+        };
+    };
+    createAdminSlots: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SlotCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    getAdminSlotById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    deleteAdminSlot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeleteResponse"];
+                };
+            };
+        };
+    };
+    updateAdminSlot: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    getAdminBookings: {
+        parameters: {
+            query?: {
+                date?: string;
+                barberId?: number;
+                userId?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminListAnyResponse"];
+                };
+            };
+        };
+    };
+    createAdminBooking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    getAdminBookingById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    deleteAdminBooking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeleteResponse"];
+                };
+            };
+        };
+    };
+    updateAdminBooking: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    listAdminReviews: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminListAnyResponse"];
+                };
+            };
+        };
+    };
+    createAdminReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    getAdminReviewById: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    deleteAdminReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeleteResponse"];
+                };
+            };
+        };
+    };
+    updateAdminReview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    listAdminCartItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminListAnyResponse"];
+                };
+            };
+        };
+    };
+    createAdminCartItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    getAdminCartItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: number;
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
+                };
+            };
+        };
+    };
+    deleteAdminCartItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: number;
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deleted */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminDeleteResponse"];
+                };
+            };
+        };
+    };
+    updateAdminCartItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: number;
+                productId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminObject"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminObject"];
                 };
             };
         };

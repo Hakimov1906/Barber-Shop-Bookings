@@ -20,7 +20,7 @@
 1. Register new user -> `201`
 2. Login with created user -> `200` + token
 3. Login with wrong password -> `401`
-4. Duplicate register (same email/phone) -> `409`
+4. Duplicate register (same phone) -> `409`
 
 ## Booking Flow
 

@@ -19,13 +19,13 @@ $base = "http://localhost:4000"
 1. Service is deployed and reachable
 2. Database is connected
 3. Demo data exists (barbers + services + slots)
-4. Admin credentials are known (`ADMIN_USER`, `ADMIN_PASSWORD` or `ADMIN_PASSWORD_HASH`)
+4. At least one admin exists in DB table `admins`
 
 ## Data Formats
 
 1. Date: `YYYY-MM-DD`
 2. Time: `HH:MM` (24h)
-3. Phone: 7-20 chars, supports digits and `+() -`
+3. Phone: `+996XXXXXXXXX`
 
 ## Smoke Checks
 
@@ -47,7 +47,6 @@ Expected:
 
 ```powershell
 $stamp = Get-Date -Format "yyyyMMddHHmmss"
-$email = "qa.$stamp@example.com"
 $phone = ("+996555$stamp").Substring(0,13)
 $password = "password123"
 
@@ -58,7 +57,6 @@ $time = ([string](Invoke-RestMethod "$base/api/slots?date=$date&barberId=$barber
 
 $registerBody = @{
   fullName = "QA User $stamp"
-  email = $email
   phone = $phone
   password = $password
 } | ConvertTo-Json
@@ -69,7 +67,7 @@ Invoke-RestMethod -Method Post `
   -Body $registerBody
 
 $loginBody = @{
-  email = $email
+  phone = $phone
   password = $password
 } | ConvertTo-Json
 
@@ -132,8 +130,8 @@ Expected on third request:
 
 ```powershell
 $adminBody = @{
-  username = "admin_user"
-  password = "admin_password"
+  phone = "+996700000001"
+  password = "admin_password_123"
 } | ConvertTo-Json
 
 $adminLogin = Invoke-RestMethod -Method Post `
@@ -171,7 +169,7 @@ Expected: `{"status":"deleted"}`
 1. `POST /api/bookings` without token -> `401`
 2. User token on `/api/admin/*` -> `403`
 3. Invalid `date` or `time` -> `400`
-4. Duplicate register by email/phone -> `409`
+4. Duplicate register by phone -> `409`
 5. Booking already occupied slot -> `409`
 6. Delete non-existing booking/slot -> `404`
 

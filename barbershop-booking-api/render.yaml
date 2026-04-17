@@ -21,12 +21,8 @@ services:
         value: "2"
       - key: JWT_SECRET
         sync: false
-      - key: ADMIN_USER
-        sync: false
-      - key: ADMIN_PASSWORD_HASH
-        sync: false
       - key: CORS_ORIGIN
-        sync: false
+        value: https://hairline-bookings.vercel.app,https://hairline-admin-panel.vercel.app
   - type: cron
     name: barbershop-seed-refresh
     runtime: node

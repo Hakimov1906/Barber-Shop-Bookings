@@ -1,12 +1,11 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const request = require('supertest');
+const bcrypt = require('bcryptjs');
 require('dotenv').config({ path: '.env' });
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret';
-process.env.ADMIN_USER = process.env.ADMIN_USER || 'admin';
-process.env.ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin_password';
 
 const { createApp } = require('../src/app');
 const { pool } = require('../src/db/pool');
@@ -33,6 +32,8 @@ const phone = `+996700${String(Date.now()).slice(-6)}`;
 const password = 'password123';
 const updatedPassword = 'password456';
 const tooLongPassword = 'p'.repeat(51);
+const adminPhone = `+996711${String(Date.now()).slice(-6)}`;
+const adminPassword = 'admin_password_123';
 
 let userToken = '';
 let adminToken = '';
@@ -69,6 +70,20 @@ test.before(async () => {
 
     barberId = barberResult.rows[0].id;
     serviceId = serviceResult.rows[0].id;
+
+    const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
+    await pool.query(
+      `
+      INSERT INTO admins (full_name, phone, password_hash, updated_at)
+      VALUES ($1, $2, $3, NOW())
+      ON CONFLICT (phone) DO UPDATE SET
+        full_name = EXCLUDED.full_name,
+        password_hash = EXCLUDED.password_hash,
+        updated_at = NOW()
+      `,
+      ['Integration Admin', adminPhone, adminPasswordHash]
+    );
+
     dbReady = true;
   } catch (error) {
     skipReason = `Database unavailable: ${error.code || error.message}`;
@@ -100,8 +115,8 @@ test('register, login and create booking flow', async (t) => {
   const adminLoginResponse = await request(app)
     .post('/api/admin/login')
     .send({
-      username: process.env.ADMIN_USER,
-      password: process.env.ADMIN_PASSWORD
+      phone: adminPhone,
+      password: adminPassword
     });
 
   assert.equal(adminLoginResponse.statusCode, 200);
@@ -490,6 +505,7 @@ test.after(async () => {
       [slotDate, barberId, slotTimes]
     );
     await client.query('DELETE FROM users WHERE phone = $1', [phone]);
+    await client.query('DELETE FROM admins WHERE phone = $1', [adminPhone]);
     await client.query('COMMIT');
   } catch (err) {
     await client.query('ROLLBACK');

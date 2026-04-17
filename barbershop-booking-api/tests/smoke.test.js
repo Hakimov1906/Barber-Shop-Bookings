@@ -5,8 +5,6 @@ require('dotenv').config({ path: '.env' });
 
 process.env.NODE_ENV = process.env.NODE_ENV || 'test';
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret';
-process.env.ADMIN_USER = process.env.ADMIN_USER || 'admin';
-process.env.ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin_password';
 
 const { createApp } = require('../src/app');
 const { pool } = require('../src/db/pool');

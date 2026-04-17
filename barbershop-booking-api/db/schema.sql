@@ -88,6 +88,15 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS admins (
+  id SERIAL PRIMARY KEY,
+  full_name TEXT NOT NULL,
+  phone TEXT NOT NULL UNIQUE CHECK (phone ~ '^\+996\d{9}$'),
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS salons_active_idx ON salons(is_active);
 CREATE INDEX IF NOT EXISTS salons_sort_order_idx ON salons(sort_order);
 CREATE INDEX IF NOT EXISTS barbers_salon_idx ON barbers(salon_id);
@@ -96,6 +105,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS services_name_uidx ON services(name);
 CREATE UNIQUE INDEX IF NOT EXISTS products_name_uidx ON products(name);
 CREATE INDEX IF NOT EXISTS products_category_idx ON products(category);
 CREATE INDEX IF NOT EXISTS products_active_idx ON products(is_active);
+CREATE INDEX IF NOT EXISTS admins_phone_idx ON admins(phone);
 
 CREATE TABLE IF NOT EXISTS slots (
   id SERIAL PRIMARY KEY,

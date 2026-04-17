@@ -13,10 +13,6 @@ function validateStartupConfig() {
   if (!signingSecret) {
     logger.warn('JWT secret is not configured. Auth endpoints will return 500.');
   }
-
-  if (process.env.NODE_ENV === 'production' && !process.env.ADMIN_PASSWORD_HASH) {
-    throw new Error('ADMIN_PASSWORD_HASH is required in production');
-  }
 }
 
 async function start() {
