@@ -1,11 +1,14 @@
 import { FormEvent, useMemo, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth";
 import { ApiError } from "../api";
+import { useAuth } from "../auth";
 import { ensureKyrgyzPhonePrefix, isValidKyrgyzPhone, KYRGYZ_PHONE_PREFIX } from "../utils/phone";
 
 function formatError(error: unknown) {
-  if (error instanceof ApiError) return `${error.message} (HTTP ${error.status})`;
+  if (error instanceof ApiError) {
+    if (error.status > 0) return `${error.message} (HTTP ${error.status})`;
+    return error.message;
+  }
   if (error instanceof Error) return error.message;
   return "Unknown error";
 }
@@ -67,7 +70,7 @@ export function LoginPage() {
             value={phone}
             onChange={(event) => setPhone(ensureKyrgyzPhonePrefix(event.target.value))}
             inputMode="numeric"
-            pattern="^\+996\d{9}$"
+            pattern="^\\+996\\d{9}$"
             placeholder="+996000000000"
             required
           />
@@ -94,4 +97,3 @@ export function LoginPage() {
     </main>
   );
 }
-

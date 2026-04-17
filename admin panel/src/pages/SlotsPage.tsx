@@ -112,7 +112,7 @@ export function SlotsPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          setLookupError(error instanceof Error ? error.message : "Не удалось загрузить барберов");
+          setLookupError(error instanceof Error ? error.message : "Не удалось загрузить список барберов");
         }
       }
     };

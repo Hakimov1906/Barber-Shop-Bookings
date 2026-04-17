@@ -72,7 +72,7 @@ export type ResourceAdapter<T extends EntityRecord = EntityRecord> = {
   label: string;
   idKeys: string[];
   supportsServerPagination: boolean;
-  list: (token: string, params: ListParams) => Promise<ListPayload<T>>;
+  list: (token: string, params: ListParams, signal?: AbortSignal) => Promise<ListPayload<T>>;
   get: (token: string, ids: Record<string, string | number>) => Promise<T>;
   create: (token: string, payload: Record<string, unknown>) => Promise<T | EntityRecord>;
   update: (token: string, ids: Record<string, string | number>, payload: Record<string, unknown>) => Promise<T | EntityRecord>;

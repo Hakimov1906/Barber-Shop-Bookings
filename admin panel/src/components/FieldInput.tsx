@@ -59,10 +59,11 @@ function TagInput({ value, disabled, onChange }: { value: unknown; disabled?: bo
             <button
               type="button"
               className="tag-remove"
+              aria-label={`Удалить тег ${tag}`}
               onClick={() => onChange(tags.filter((item) => item !== tag))}
               disabled={disabled}
             >
-              ?
+              ×
             </button>
           </span>
         ))}
@@ -181,7 +182,7 @@ export function FieldInput({ field, value, disabled, onChange }: FieldInputProps
     <input
       type={inputType}
       value={stringValue}
-      onChange={(event) => onChange(field.kind === "number" ? event.target.value : event.target.value)}
+      onChange={(event) => onChange(event.target.value)}
       disabled={disabled}
       required={required}
       min={field.min}

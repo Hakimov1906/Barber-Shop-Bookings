@@ -133,6 +133,39 @@ function buildEntityPath(basePath: string, idKeys: string[], ids: Record<string,
   return `${basePath}/${parts.join("/")}`;
 }
 
+async function parseResponsePayload(response: Response) {
+  if (response.status === 204) return undefined;
+
+  const raw = await response.text();
+  if (!raw.trim()) return undefined;
+
+  const contentType = response.headers.get("content-type") || "";
+  if (contentType.includes("application/json")) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      // Fallback for invalid JSON responses from upstream proxies.
+      return raw;
+    }
+  }
+
+  return raw;
+}
+
+function extractErrorMessage(payload: unknown, status: number) {
+  if (!payload) return `Request failed (${status})`;
+  if (typeof payload === "string") return payload;
+
+  if (isObject(payload)) {
+    const candidates = [payload.error, payload.message, payload.detail];
+    for (const candidate of candidates) {
+      if (typeof candidate === "string" && candidate.trim()) return candidate;
+    }
+  }
+
+  return `Request failed (${status})`;
+}
+
 async function request<T>(
   path: string,
   method: HttpMethod,
@@ -144,21 +177,27 @@ async function request<T>(
   if (body !== undefined) headers.set("Content-Type", "application/json");
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-    signal,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      signal,
+    });
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw error;
+    }
+    throw new ApiError("Сетевая ошибка. Не удалось связаться с API.", 0, error);
+  }
 
-  const payload = await response.json().catch(() => undefined);
+  const payload = await parseResponsePayload(response);
   if (!response.ok) {
-    const message =
-      isObject(payload) && typeof payload.error === "string"
-        ? payload.error
-        : `Request failed (${response.status})`;
+    const message = extractErrorMessage(payload, response.status);
     throw new ApiError(message, response.status, payload);
   }
+  if (typeof payload === "undefined") return {} as T;
   return payload as T;
 }
 
@@ -185,7 +224,7 @@ export function createCrudAdapter<T extends EntityRecord>(options: CrudAdapterOp
     label: options.label,
     idKeys: options.idKeys,
     supportsServerPagination: options.supportsServerPagination,
-    async list(token: string, params: ListParams) {
+    async list(token: string, params: ListParams, signal?: AbortSignal) {
       const query = {
         ...(options.staticQuery || {}),
         ...(params.query || {}),
@@ -195,7 +234,7 @@ export function createCrudAdapter<T extends EntityRecord>(options: CrudAdapterOp
         query.offset = params.offset;
       }
       const path = `${options.basePath}${toQueryString(query)}`;
-      const payload = await request<unknown>(path, "GET", token);
+      const payload = await request<unknown>(path, "GET", token, undefined, signal);
       return normalizeListPayload<T>(payload, params.limit, params.offset, options.supportsServerPagination);
     },
     async get(token: string, ids: Record<string, string | number>) {

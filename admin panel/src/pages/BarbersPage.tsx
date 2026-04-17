@@ -32,7 +32,7 @@ export function BarbersPage() {
         }
       } catch (error) {
         if (!cancelled) {
-          setLookupError(error instanceof Error ? error.message : "Не удалось загрузить салоны");
+          setLookupError(error instanceof Error ? error.message : "Не удалось загрузить список салонов");
         }
       }
     };

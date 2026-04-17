@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { FormFieldConfig, FormValues, ResourceConfig, SortDirection, EntityRecord } from "../types";
-import { useAuth } from "../auth";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ApiError } from "../api";
-import { EntityGrid } from "../components/EntityGrid";
 import { EntityDrawer } from "../components/EntityDrawer";
-import { buildListCacheKey, invalidateResourceCache, readListCache, writeListCache } from "../utils/query-cache";
+import { EntityGrid } from "../components/EntityGrid";
 import { sanitizePayload, toIdRecord } from "../config/resources";
+import type { EntityRecord, FormFieldConfig, FormValues, ResourceConfig, SortDirection } from "../types";
+import { buildListCacheKey, invalidateResourceCache, readListCache, writeListCache } from "../utils/query-cache";
 import { isValidKyrgyzPhone, KYRGYZ_PHONE_PREFIX } from "../utils/phone";
+import { useAuth } from "../auth";
 
 type ResourcePageProps = {
   config: ResourceConfig;
@@ -22,6 +22,7 @@ type DrawerState = {
 };
 
 const DEFAULT_LIMIT = 50;
+const EMPTY_STATIC_QUERY: Record<string, string | number | boolean | undefined> = {};
 
 function snakeCase(value: string) {
   return value.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`);
@@ -37,7 +38,10 @@ function comparePrimitive(a: unknown, b: unknown) {
 }
 
 function formatApiError(error: unknown) {
-  if (error instanceof ApiError) return `${error.message} (HTTP ${error.status})`;
+  if (error instanceof ApiError) {
+    if (error.status > 0) return `${error.message} (HTTP ${error.status})`;
+    return error.message;
+  }
   if (error instanceof Error) return error.message;
   return "Unknown error";
 }
@@ -84,7 +88,7 @@ function validateForm(config: ResourceConfig, values: FormValues, mode: "create"
     const enforceRequired = field.required && !(mode === "edit" && field.kind === "password");
     if (enforceRequired) {
       if (field.kind === "boolean") {
-        // checkbox always has a value
+        // Checkbox always contains value.
       } else if (field.kind === "tags") {
         const tags = Array.isArray(value) ? value : [];
         if (!tags.length) return `Поле "${field.label}" обязательно.`;
@@ -120,8 +124,10 @@ function validateForm(config: ResourceConfig, values: FormValues, mode: "create"
   return "";
 }
 
-export function ResourcePage({ config, staticQuery = {}, beforeGrid }: ResourcePageProps) {
+export function ResourcePage({ config, staticQuery = EMPTY_STATIC_QUERY, beforeGrid }: ResourcePageProps) {
   const { token } = useAuth();
+  const mountedRef = useRef(true);
+  const inFlightRequestRef = useRef<AbortController | null>(null);
   const [rows, setRows] = useState<EntityRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState("");
@@ -153,8 +159,21 @@ export function ResourcePage({ config, staticQuery = {}, beforeGrid }: ResourceP
 
   const cacheKey = useMemo(() => buildListCacheKey(config.key, limit, offset, query), [config.key, limit, offset, query]);
 
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      inFlightRequestRef.current?.abort();
+      inFlightRequestRef.current = null;
+    };
+  }, []);
+
   const reload = useCallback(async () => {
     if (!token) return;
+
+    inFlightRequestRef.current?.abort();
+    const controller = new AbortController();
+    inFlightRequestRef.current = controller;
 
     setLoading(true);
     setLoadError("");
@@ -162,30 +181,46 @@ export function ResourcePage({ config, staticQuery = {}, beforeGrid }: ResourceP
 
     const cached = readListCache(cacheKey);
     if (cached) {
+      if (controller.signal.aborted || !mountedRef.current) return;
       setRows(cached.items);
       setTotal(cached.total);
       setHasMore(cached.hasMore);
       setLoading(false);
+      if (inFlightRequestRef.current === controller) {
+        inFlightRequestRef.current = null;
+      }
       return;
     }
 
     try {
-      const listPayload = await config.adapter.list(token, {
-        limit,
-        offset,
-        query,
-      });
+      const listPayload = await config.adapter.list(
+        token,
+        {
+          limit,
+          offset,
+          query,
+        },
+        controller.signal,
+      );
+      if (controller.signal.aborted || !mountedRef.current) return;
       setRows(listPayload.items);
       setTotal(listPayload.total);
       setHasMore(listPayload.hasMore);
       writeListCache(cacheKey, listPayload);
     } catch (error) {
+      if (controller.signal.aborted || !mountedRef.current) return;
       setLoadError(formatApiError(error));
       setRows([]);
       setTotal(0);
       setHasMore(false);
     } finally {
-      setLoading(false);
+      const canCommit = mountedRef.current && !controller.signal.aborted;
+      if (canCommit) {
+        if (inFlightRequestRef.current === controller) {
+          inFlightRequestRef.current = null;
+        }
+        setLoading(false);
+      }
     }
   }, [token, cacheKey, config.adapter, limit, offset, query]);
 
@@ -326,13 +361,11 @@ export function ResourcePage({ config, staticQuery = {}, beforeGrid }: ResourceP
     }
   };
 
-  const headerTitle = `${config.title}`;
-
   return (
     <section className="resource-page">
       <div className="resource-header">
         <div>
-          <h2>{headerTitle}</h2>
+          <h2>{config.title}</h2>
           <p>{config.description}</p>
         </div>
       </div>
@@ -413,5 +446,3 @@ export function ResourcePage({ config, staticQuery = {}, beforeGrid }: ResourceP
     </section>
   );
 }
-
-
