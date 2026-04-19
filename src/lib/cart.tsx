@@ -33,6 +33,7 @@ export type CartContextValue = {
   removeFromCart: (productId: string) => Promise<boolean>;
   increaseQuantity: (productId: string) => Promise<boolean>;
   decreaseQuantity: (productId: string) => Promise<boolean>;
+  setQuantity: (productId: string, quantity: number) => Promise<boolean>;
   clearCart: () => Promise<boolean>;
 };
 
@@ -171,6 +172,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           await api.setMyCartItem(authToken, Number(productId), {
             quantity: existing.quantity - 1,
           });
+        });
+      },
+      setQuantity: async (productId, quantity) => {
+        if (quantity <= 0) {
+          return withAuthCartUpdate(async (authToken) => {
+            await api.removeMyCartItem(authToken, Number(productId));
+          });
+        }
+
+        return withAuthCartUpdate(async (authToken) => {
+          await api.setMyCartItem(authToken, Number(productId), { quantity });
         });
       },
       clearCart: async () =>

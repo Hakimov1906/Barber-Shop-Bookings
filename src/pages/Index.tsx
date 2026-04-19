@@ -1,8 +1,9 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, Clock, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-barber.jpg";
+import MapModal from "@/components/MapModal";
 import gallery1 from "@/assets/portfolio-1.jpg";
 import gallery2 from "@/assets/portfolio-2.jpg";
 import gallery3 from "@/assets/portfolio-3.jpg";
@@ -38,6 +39,7 @@ const galleryImages = [gallery1, gallery2, gallery3, gallery4];
 
 const Index = () => {
   const { tr } = useI18n();
+  const [isMapOpen, setIsMapOpen] = useState(false);
   const { salons, isLoading: salonsLoading, isError: salonsError, refetch: refetchSalons } = useSalons();
 
   const heroSalonsLabel = useMemo(
@@ -77,19 +79,29 @@ const Index = () => {
               {tr("hero.desc")}
             </motion.p>
 
-            <motion.div variants={fadeUp} custom={3} className="mt-10 flex flex-col gap-4 sm:flex-row">
-              <Link
-                to="/masters"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-8 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-              >
-                {tr("hero.book")}
-              </Link>
-              <Link
-                to="/shop"
-                className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/10 px-8 text-sm font-semibold text-white transition hover:bg-white/20"
-              >
-                {tr("hero.shop")}
-              </Link>
+            <motion.div variants={fadeUp} custom={3} className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+              <div className="inline-flex flex-wrap items-center gap-3">
+                <Link
+                  to="/masters"
+                  className="inline-flex h-12 items-center justify-center rounded-full bg-primary px-8 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+                >
+                  {tr("hero.book")}
+                </Link>
+                <Link
+                  to="/shop"
+                  className="inline-flex h-12 items-center justify-center rounded-full border border-white/20 bg-white/10 px-8 text-sm font-semibold text-white transition hover:bg-white/20"
+                >
+                  {tr("hero.shop")}
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setIsMapOpen(true)}
+                  className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white transition hover:bg-white/20"
+                  aria-label="Открыть карту салонов"
+                >
+                  <MapPin className="h-5 w-5" />
+                </button>
+              </div>
             </motion.div>
 
             <motion.div
@@ -198,6 +210,8 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {isMapOpen && <MapModal onClose={() => setIsMapOpen(false)} />}
     </div>
   );
 };

@@ -9,8 +9,7 @@ type CartProps = {
 
 const Cart = ({ isEmbedded = false }: CartProps) => {
   const { tr, price } = useI18n();
-  const { items, totalPrice, increaseQuantity, decreaseQuantity, removeFromCart, clearCart, isLoading } =
-    useCart();
+  const { items, totalPrice, increaseQuantity, decreaseQuantity, removeFromCart, clearCart, isLoading, setQuantity } = useCart();
 
   const emptyContent = (
     <div className="surface-card p-8 text-center sm:p-10">
@@ -61,23 +60,34 @@ const Cart = ({ isEmbedded = false }: CartProps) => {
               </div>
 
               <div className="flex flex-col gap-3 sm:items-end">
-                <div className="inline-flex items-center rounded-full border border-border bg-secondary p-1">
+                <div className="inline-flex items-center gap-2 rounded-lg border border-border bg-secondary p-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => void decreaseQuantity(item.id)}
                     disabled={isLoading}
+                    className="h-8 w-8 p-0"
                   >
-                    -
+                    −
                   </Button>
-                  <span className="min-w-[2rem] px-2 text-center text-sm font-medium">
-                    {item.quantity}
-                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={item.quantity}
+                    onChange={(e) => {
+                      const newQuantity = Math.max(1, Number(e.target.value));
+                      setQuantity(item.id, newQuantity);
+                    }}
+                    disabled={isLoading}
+                    className="w-20 bg-transparent text-center text-lg font-semibold focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    style={{ MozAppearance: "textfield" }}
+                  />
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => void increaseQuantity(item.id)}
                     disabled={isLoading}
+                    className="h-8 w-8 p-0"
                   >
                     +
                   </Button>
