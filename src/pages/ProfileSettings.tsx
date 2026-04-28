@@ -36,12 +36,22 @@ const ProfileSettings = () => {
 
   const currentPasswordValue = currentPassword.trim();
   const passwordTooShort = newPassword.length > 0 && newPassword.length < 6;
-  const passwordTooLong = newPassword.length > 50;
+  const passwordTooLong = newPassword.length > 20;
+  const passwordInvalidChars = newPassword.length > 0 && !/^[A-Za-z0-9]+$/.test(newPassword);
+  const currentPasswordTooLong = currentPassword.length > 20;
+  const currentPasswordInvalidChars =
+    currentPassword.length > 0 && !/^[A-Za-z0-9]+$/.test(currentPassword);
+  const passwordSameAsCurrent =
+    currentPasswordValue.length > 0 && newPassword.length > 0 && currentPasswordValue === newPassword;
   const passwordMismatch = repeatPassword.length > 0 && newPassword !== repeatPassword;
   const canSubmitPassword = Boolean(
     currentPasswordValue &&
       newPassword.length >= 6 &&
-      newPassword.length <= 50 &&
+      newPassword.length <= 20 &&
+      !passwordInvalidChars &&
+      !passwordSameAsCurrent &&
+      !currentPasswordTooLong &&
+      !currentPasswordInvalidChars &&
       repeatPassword &&
       newPassword === repeatPassword,
   );
@@ -241,9 +251,20 @@ const ProfileSettings = () => {
               value={currentPassword}
               onChange={(event) => setCurrentPassword(event.target.value)}
               className="h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
+              maxLength={20}
+              pattern="[A-Za-z0-9]{1,20}"
+              placeholder={tr("profile.settings.password.current.hint")}
               autoComplete="current-password"
               required
             />
+            <p className="mt-1 text-xs text-muted-foreground">
+              {tr("profile.settings.password.current.hint")}
+            </p>
+            {currentPasswordInvalidChars && (
+              <p className="mt-1 text-xs text-destructive">
+                {tr("profile.settings.password.error.pattern")}
+              </p>
+            )}
           </div>
 
           <div>
@@ -260,7 +281,8 @@ const ProfileSettings = () => {
               onChange={(event) => setNewPassword(event.target.value)}
               className="h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
               minLength={6}
-              maxLength={50}
+              maxLength={20}
+              pattern="[A-Za-z0-9]{6,20}"
               autoComplete="new-password"
               required
             />
@@ -272,6 +294,16 @@ const ProfileSettings = () => {
             {passwordTooLong && (
               <p className="mt-1 text-xs text-destructive">
                 {tr("profile.settings.password.error.maxLength")}
+              </p>
+            )}
+            {passwordInvalidChars && (
+              <p className="mt-1 text-xs text-destructive">
+                {tr("profile.settings.password.error.pattern")}
+              </p>
+            )}
+            {passwordSameAsCurrent && (
+              <p className="mt-1 text-xs text-destructive">
+                {tr("profile.settings.password.error.sameAsCurrent")}
               </p>
             )}
           </div>
@@ -290,7 +322,8 @@ const ProfileSettings = () => {
               onChange={(event) => setRepeatPassword(event.target.value)}
               className="h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
               minLength={6}
-              maxLength={50}
+              maxLength={20}
+              pattern="[A-Za-z0-9]{6,20}"
               autoComplete="new-password"
               required
             />

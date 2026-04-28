@@ -1,6 +1,6 @@
 import { useMemo, useState, type KeyboardEvent } from "react";
 import { motion } from "framer-motion";
-import { Lock, User, Phone, ArrowRight } from "lucide-react";
+import { Lock, User, Phone, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
@@ -17,6 +17,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState(KG_PHONE_PREFIX);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { login, register } = useAuth();
@@ -149,17 +150,29 @@ const Auth = () => {
               </div>
 
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <input
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
                   minLength={6}
-                  maxLength={50}
-                  type="password"
+                  maxLength={20}
+                  pattern="[A-Za-z0-9]{6,20}"
+                  title={tr("auth.field.password.hint")}
+                  type={showPassword ? "text" : "password"}
                   placeholder={tr("auth.field.password")}
-                  className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
+                  className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-10 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {tr("auth.field.password.hint")}
+                </p>
               </div>
 
               <button

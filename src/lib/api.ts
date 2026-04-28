@@ -91,8 +91,9 @@ const MOCK_BOOKINGS_KEY = "hairline-mock-bookings";
 const MOCK_REVIEWS_KEY = "hairline-mock-reviews";
 const MOCK_CART_KEY = "hairline-mock-cart";
 const KG_PHONE_REGEX = /^\+996\d{9}$/;
+const PASSWORD_REGEX = /^[A-Za-z0-9]+$/;
 const MIN_PASSWORD_LENGTH = 6;
-const MAX_PASSWORD_LENGTH = 50;
+const MAX_PASSWORD_LENGTH = 20;
 const MAX_REVIEW_COMMENT_LENGTH = 150;
 const MOCK_SLOT_TIMES = [
   "10:00",
@@ -401,7 +402,8 @@ const mockApi = {
       fullName.length > 120 ||
       !KG_PHONE_REGEX.test(phone) ||
       passwordLength < MIN_PASSWORD_LENGTH ||
-      passwordLength > MAX_PASSWORD_LENGTH
+      passwordLength > MAX_PASSWORD_LENGTH ||
+      !PASSWORD_REGEX.test(body.password)
     ) {
       throw new ApiError("Invalid payload", 400);
     }
@@ -640,8 +642,11 @@ const mockApi = {
     if (!body.currentPassword?.trim() || (body.newPassword?.length ?? 0) < 6) {
       throw new ApiError("Invalid payload", 400);
     }
-    if ((body.newPassword?.length ?? 0) > 50) {
+    if ((body.newPassword?.length ?? 0) > MAX_PASSWORD_LENGTH || !PASSWORD_REGEX.test(body.newPassword)) {
       throw new ApiError("Invalid payload", 400);
+    }
+    if (body.currentPassword === body.newPassword) {
+      throw new ApiError("New password must differ from current password", 400);
     }
 
     const users = loadMockUsers();

@@ -104,7 +104,7 @@ const loginSchema = z.object({
 const registerSchema = z.object({
   fullName: z.string().min(2).max(120),
   phone: z.string().regex(phoneRegex, 'Invalid phone number'),
-  password: z.string().min(6).max(50)
+  password: z.string().regex(/^[A-Za-z0-9]+$/, 'Invalid password format').min(6).max(20)
 });
 
 const userLoginSchema = z.object({
@@ -122,8 +122,8 @@ const userProfileUpdateSchema = z
   });
 
 const userPasswordUpdateSchema = z.object({
-  currentPassword: z.string().min(1),
-  newPassword: z.string().min(6).max(50)
+  currentPassword: z.string().regex(/^[A-Za-z0-9]+$/, 'Invalid password format').min(1).max(20),
+  newPassword: z.string().regex(/^[A-Za-z0-9]+$/, 'Invalid password format').min(6).max(20)
 });
 
 const slotCreateSchema = z.object({
