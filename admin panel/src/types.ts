@@ -38,6 +38,7 @@ export type FormFieldConfig = {
   entityKey?: string;
   minLength?: number;
   maxLength?: number;
+  pattern?: string;
   hiddenOnCreate?: boolean;
   hiddenOnEdit?: boolean;
   disabledOnEdit?: boolean;
@@ -97,4 +98,3 @@ export type ResourceConfig<T extends EntityRecord = EntityRecord> = {
   normalizeForForm?: (entity: EntityRecord) => FormValues;
   afterSaveMessage?: string;
 };
-

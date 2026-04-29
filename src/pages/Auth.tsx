@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
+import { PasswordInput } from "@/components/PasswordInput";
 import {
   KG_PHONE_PREFIX,
   KG_PHONE_TOTAL_LENGTH,
@@ -149,14 +150,14 @@ const Auth = () => {
               </div>
 
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <input
+                <PasswordInput
+                  icon={<Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />}
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   required
                   minLength={6}
-                  maxLength={50}
-                  type="password"
+                  maxLength={isLogin ? undefined : 20}
+                  pattern={isLogin ? undefined : "[A-Za-z0-9]+"}
                   placeholder={tr("auth.field.password")}
                   className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
                 />

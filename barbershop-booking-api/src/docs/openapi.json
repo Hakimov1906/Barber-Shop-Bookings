@@ -98,7 +98,8 @@
           "password": {
             "type": "string",
             "minLength": 6,
-            "maxLength": 50
+            "maxLength": 20,
+            "pattern": "^[A-Za-z0-9]+$"
           }
         }
       },
@@ -883,7 +884,8 @@
           "newPassword": {
             "type": "string",
             "minLength": 6,
-            "maxLength": 50
+            "maxLength": 20,
+            "pattern": "^[A-Za-z0-9]+$"
           }
         }
       },

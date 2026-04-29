@@ -91,6 +91,7 @@ function TagInput({
 
 export function FieldInput({ field, value, disabled, onChange }: FieldInputProps) {
   const required = Boolean(field.required);
+  const [passwordVisible, setPasswordVisible] = useState(false);
 
   if (field.kind === "textarea") {
     return (
@@ -184,10 +185,17 @@ export function FieldInput({ field, value, disabled, onChange }: FieldInputProps
     );
   }
 
-  const inputType = field.kind === "password" ? "password" : field.kind === "number" ? "number" : "text";
+  const inputType =
+    field.kind === "password"
+      ? passwordVisible
+        ? "text"
+        : "password"
+      : field.kind === "number"
+        ? "number"
+        : "text";
   const stringValue = toStringValue(value);
 
-  return (
+  const input = (
     <input
       type={inputType}
       value={stringValue}
@@ -199,7 +207,39 @@ export function FieldInput({ field, value, disabled, onChange }: FieldInputProps
       step={field.step}
       minLength={field.minLength}
       maxLength={field.maxLength}
+      pattern={field.pattern}
       placeholder={field.placeholder}
     />
+  );
+
+  if (field.kind !== "password") return input;
+
+  return (
+    <div className="password-field">
+      {input}
+      <button
+        type="button"
+        className="password-toggle"
+        aria-label={passwordVisible ? "Hide password" : "Show password"}
+        onClick={() => setPasswordVisible((current) => !current)}
+        disabled={disabled}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          {passwordVisible ? (
+            <>
+              <path d="M3 3l18 18" />
+              <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8" />
+              <path d="M9.9 4.2A9.7 9.7 0 0 1 12 4c5 0 8.5 4.5 9.5 6a2.8 2.8 0 0 1 0 4 15 15 0 0 1-2.1 2.5" />
+              <path d="M6.6 6.6A15 15 0 0 0 2.5 10a2.8 2.8 0 0 0 0 4C3.5 15.5 7 20 12 20a9.7 9.7 0 0 0 4.1-.9" />
+            </>
+          ) : (
+            <>
+              <path d="M2.5 10a2.8 2.8 0 0 0 0 4C3.5 15.5 7 20 12 20s8.5-4.5 9.5-6a2.8 2.8 0 0 0 0-4C20.5 8.5 17 4 12 4S3.5 8.5 2.5 10Z" />
+              <circle cx="12" cy="12" r="3" />
+            </>
+          )}
+        </svg>
+      </button>
+    </div>
   );
 }

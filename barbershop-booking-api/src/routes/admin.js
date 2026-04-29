@@ -17,6 +17,12 @@ const adminLoginRateLimiter = createRateLimit({
 const phoneRegex = /^\+996\d{9}$/;
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
+const passwordRegex = /^[A-Za-z0-9]+$/;
+const passwordSchema = z
+  .string()
+  .min(6)
+  .max(20)
+  .regex(passwordRegex, 'Password must contain only letters and numbers');
 
 function normalizePhone(value) {
   const raw = String(value || '').trim();
@@ -308,7 +314,7 @@ const adminCreateSchema = z.object({
     .string()
     .transform((value) => normalizePhone(value))
     .refine((value) => phoneRegex.test(value), 'Invalid phone number'),
-  password: z.string().min(6).max(50)
+  password: passwordSchema
 });
 
 const adminUpdateSchema = z.object({
@@ -318,7 +324,7 @@ const adminUpdateSchema = z.object({
     .transform((value) => normalizePhone(value))
     .refine((value) => phoneRegex.test(value), 'Invalid phone number')
     .optional(),
-  password: z.string().min(6).max(50).optional()
+  password: passwordSchema.optional()
 });
 
 const userCreateSchema = adminCreateSchema;

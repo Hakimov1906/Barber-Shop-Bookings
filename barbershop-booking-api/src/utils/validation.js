@@ -3,6 +3,12 @@ const { z } = require('zod');
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
 const phoneRegex = /^\+996\d{9}$/;
+const passwordRegex = /^[A-Za-z0-9]+$/;
+const passwordSchema = z
+  .string()
+  .min(6)
+  .max(20)
+  .regex(passwordRegex, 'Password must contain only letters and numbers');
 
 function normalizeFullName(value) {
   return String(value || '')
@@ -104,7 +110,7 @@ const loginSchema = z.object({
 const registerSchema = z.object({
   fullName: z.string().min(2).max(120),
   phone: z.string().regex(phoneRegex, 'Invalid phone number'),
-  password: z.string().min(6).max(50)
+  password: passwordSchema
 });
 
 const userLoginSchema = z.object({
@@ -123,7 +129,7 @@ const userProfileUpdateSchema = z
 
 const userPasswordUpdateSchema = z.object({
   currentPassword: z.string().min(1),
-  newPassword: z.string().min(6).max(50)
+  newPassword: passwordSchema
 });
 
 const slotCreateSchema = z.object({

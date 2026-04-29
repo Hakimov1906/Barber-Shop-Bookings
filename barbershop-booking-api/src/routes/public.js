@@ -775,6 +775,11 @@ router.patch('/users/me/password', requireAuth, requireRole('user'), async (req,
       return res.status(400).json({ error: 'Current password is incorrect' });
     }
 
+    const sameAsCurrentPassword = await bcrypt.compare(data.newPassword, user.password_hash);
+    if (sameAsCurrentPassword) {
+      return res.status(400).json({ error: 'New password must be different from the current password' });
+    }
+
     const nextPasswordHash = await bcrypt.hash(data.newPassword, 10);
     await pool.query(
       'UPDATE users SET password_hash = $1 WHERE id = $2',

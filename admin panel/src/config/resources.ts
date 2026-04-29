@@ -59,7 +59,7 @@ const adminsConfig: ResourceConfig = {
   fields: [
     { key: "fullName", entityKey: "full_name", label: "ФИО", kind: "text", required: true, minLength: 2, maxLength: 120 },
     { key: "phone", label: "Телефон", kind: "phone", required: true },
-    { key: "password", label: "Пароль", kind: "password", required: true, minLength: 6, maxLength: 50 },
+    { key: "password", label: "Пароль", kind: "password", required: true, minLength: 6, maxLength: 20, pattern: "[A-Za-z0-9]+" },
   ],
   defaultSort: { key: "id", direction: "desc" },
   searchKeys: ["id", "full_name", "phone"],
@@ -102,7 +102,7 @@ const usersConfig: ResourceConfig = {
   fields: [
     { key: "fullName", entityKey: "full_name", label: "ФИО", kind: "text", required: true, minLength: 2, maxLength: 120 },
     { key: "phone", label: "Телефон", kind: "phone", required: true },
-    { key: "password", label: "Пароль", kind: "password", required: true, minLength: 6, maxLength: 50 },
+    { key: "password", label: "Пароль", kind: "password", required: true, minLength: 6, maxLength: 20, pattern: "[A-Za-z0-9]+" },
   ],
   defaultSort: { key: "id", direction: "desc" },
   searchKeys: ["id", "full_name", "phone"],
@@ -640,5 +640,4 @@ export function toIdRecord(config: ResourceConfig, row: FormValues): Record<stri
   }
   return ids;
 }
-
 

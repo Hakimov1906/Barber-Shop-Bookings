@@ -5,11 +5,16 @@ import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { ApiError, api } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
+import { PasswordInput } from "@/components/PasswordInput";
 import {
   KG_PHONE_PREFIX,
   KG_PHONE_TOTAL_LENGTH,
   normalizeKgPhoneInput,
 } from "@/lib/phone";
+
+const MIN_PASSWORD_LENGTH = 6;
+const MAX_PASSWORD_LENGTH = 20;
+const PASSWORD_PATTERN = /^[A-Za-z0-9]+$/;
 
 const ProfileSettings = () => {
   const { user, token, syncUser } = useAuth();
@@ -35,13 +40,19 @@ const ProfileSettings = () => {
   }, [user, fullName, phone]);
 
   const currentPasswordValue = currentPassword.trim();
-  const passwordTooShort = newPassword.length > 0 && newPassword.length < 6;
-  const passwordTooLong = newPassword.length > 50;
+  const passwordTooShort = newPassword.length > 0 && newPassword.length < MIN_PASSWORD_LENGTH;
+  const passwordTooLong = newPassword.length > MAX_PASSWORD_LENGTH;
+  const passwordInvalidCharacters =
+    newPassword.length > 0 && !PASSWORD_PATTERN.test(newPassword);
+  const passwordSameAsCurrent =
+    currentPasswordValue.length > 0 && newPassword.length > 0 && currentPasswordValue === newPassword;
   const passwordMismatch = repeatPassword.length > 0 && newPassword !== repeatPassword;
   const canSubmitPassword = Boolean(
     currentPasswordValue &&
-      newPassword.length >= 6 &&
-      newPassword.length <= 50 &&
+      newPassword.length >= MIN_PASSWORD_LENGTH &&
+      newPassword.length <= MAX_PASSWORD_LENGTH &&
+      PASSWORD_PATTERN.test(newPassword) &&
+      currentPasswordValue !== newPassword &&
       repeatPassword &&
       newPassword === repeatPassword,
   );
@@ -109,7 +120,7 @@ const ProfileSettings = () => {
       if (!token) {
         throw new ApiError("Sign in required", 401);
       }
-      if (passwordTooLong) {
+      if (passwordTooLong || passwordInvalidCharacters || passwordSameAsCurrent) {
         throw new ApiError("Invalid payload", 400);
       }
 
@@ -235,9 +246,8 @@ const ProfileSettings = () => {
             >
               {tr("profile.settings.password.current")}
             </label>
-            <input
+            <PasswordInput
               id="profile-password-current"
-              type="password"
               value={currentPassword}
               onChange={(event) => setCurrentPassword(event.target.value)}
               className="h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
@@ -253,14 +263,14 @@ const ProfileSettings = () => {
             >
               {tr("profile.settings.password.new")}
             </label>
-            <input
+            <PasswordInput
               id="profile-password-new"
-              type="password"
               value={newPassword}
               onChange={(event) => setNewPassword(event.target.value)}
               className="h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
-              minLength={6}
-              maxLength={50}
+              minLength={MIN_PASSWORD_LENGTH}
+              maxLength={MAX_PASSWORD_LENGTH}
+              pattern="[A-Za-z0-9]+"
               autoComplete="new-password"
               required
             />
@@ -274,6 +284,16 @@ const ProfileSettings = () => {
                 {tr("profile.settings.password.error.maxLength")}
               </p>
             )}
+            {passwordInvalidCharacters && (
+              <p className="mt-1 text-xs text-destructive">
+                {tr("profile.settings.password.error.characters")}
+              </p>
+            )}
+            {passwordSameAsCurrent && (
+              <p className="mt-1 text-xs text-destructive">
+                {tr("profile.settings.password.error.sameAsCurrent")}
+              </p>
+            )}
           </div>
 
           <div>
@@ -283,14 +303,14 @@ const ProfileSettings = () => {
             >
               {tr("profile.settings.password.repeat")}
             </label>
-            <input
+            <PasswordInput
               id="profile-password-repeat"
-              type="password"
               value={repeatPassword}
               onChange={(event) => setRepeatPassword(event.target.value)}
               className="h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
-              minLength={6}
-              maxLength={50}
+              minLength={MIN_PASSWORD_LENGTH}
+              maxLength={MAX_PASSWORD_LENGTH}
+              pattern="[A-Za-z0-9]+"
               autoComplete="new-password"
               required
             />

@@ -31,7 +31,7 @@ const slotTimes = randomTimes(4);
 const phone = `+996700${String(Date.now()).slice(-6)}`;
 const password = 'password123';
 const updatedPassword = 'password456';
-const tooLongPassword = 'p'.repeat(51);
+const tooLongPassword = 'p'.repeat(21);
 const adminPhone = `+996711${String(Date.now()).slice(-6)}`;
 const adminPassword = 'admin_password_123';
 
@@ -283,6 +283,16 @@ test('user can change password and login with new credentials', async (t) => {
     });
 
   assert.equal(wrongCurrentPasswordResponse.statusCode, 400);
+
+  const samePasswordResponse = await request(app)
+    .patch('/api/users/me/password')
+    .set('Authorization', `Bearer ${userToken}`)
+    .send({
+      currentPassword: password,
+      newPassword: password
+    });
+
+  assert.equal(samePasswordResponse.statusCode, 400);
 
   const shortPasswordResponse = await request(app)
     .patch('/api/users/me/password')

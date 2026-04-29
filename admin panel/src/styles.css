@@ -60,6 +60,47 @@ textarea {
   color: var(--text);
 }
 
+.password-field {
+  position: relative;
+  display: block;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-50%);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.password-toggle:hover {
+  color: var(--text);
+  background: #eff2f7;
+}
+
+.password-toggle svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 input:focus,
 select:focus,
 textarea:focus,
@@ -157,10 +198,15 @@ button.tiny {
 .login-card label,
 .bulk-form label,
 .field-block {
+  position: relative;
   display: grid;
   gap: 7px;
   font-size: 14px;
   color: var(--muted);
+}
+
+.login-card label:has(.login-password-toggle) input {
+  padding-right: 44px;
 }
 
 .field-block > span {

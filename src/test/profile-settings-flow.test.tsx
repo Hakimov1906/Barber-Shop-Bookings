@@ -77,13 +77,13 @@ describe("Profile settings flow", () => {
     const repeatPasswordInput = screen.getByLabelText("Repeat new password");
     const changePasswordButton = screen.getByRole("button", { name: "Change password" });
 
-    fireEvent.change(currentPasswordInput, { target: { value: "old-password" } });
-    fireEvent.change(newPasswordInput, { target: { value: "new-password" } });
-    fireEvent.change(repeatPasswordInput, { target: { value: "other-password" } });
+    fireEvent.change(currentPasswordInput, { target: { value: "oldpassword" } });
+    fireEvent.change(newPasswordInput, { target: { value: "newpassword" } });
+    fireEvent.change(repeatPasswordInput, { target: { value: "otherpassword" } });
 
     expect(changePasswordButton).toBeDisabled();
 
-    fireEvent.change(repeatPasswordInput, { target: { value: "new-password" } });
+    fireEvent.change(repeatPasswordInput, { target: { value: "newpassword" } });
 
     await waitFor(() => {
       expect(changePasswordButton).not.toBeDisabled();
@@ -93,8 +93,8 @@ describe("Profile settings flow", () => {
 
     await waitFor(() => {
       expect(mockApi.updatePassword).toHaveBeenCalledWith("token-xyz", {
-        currentPassword: "old-password",
-        newPassword: "new-password",
+        currentPassword: "oldpassword",
+        newPassword: "newpassword",
       });
     });
 
@@ -103,5 +103,26 @@ describe("Profile settings flow", () => {
       expect(newPasswordInput).toHaveValue("");
       expect(repeatPasswordInput).toHaveValue("");
     });
+  });
+
+  it("blocks password change when new password equals current password", async () => {
+    renderWithProviders(
+      <Routes>
+        <Route path="/profile/settings" element={<ProfileSettings />} />
+      </Routes>,
+      { route: "/profile/settings" },
+    );
+
+    const currentPasswordInput = screen.getByLabelText("Current password");
+    const newPasswordInput = screen.getByLabelText("New password");
+    const repeatPasswordInput = screen.getByLabelText("Repeat new password");
+    const changePasswordButton = screen.getByRole("button", { name: "Change password" });
+
+    fireEvent.change(currentPasswordInput, { target: { value: "samepass1" } });
+    fireEvent.change(newPasswordInput, { target: { value: "samepass1" } });
+    fireEvent.change(repeatPasswordInput, { target: { value: "samepass1" } });
+
+    expect(changePasswordButton).toBeDisabled();
+    expect(screen.getByText("New password must be different from the current password.")).toBeInTheDocument();
   });
 });
