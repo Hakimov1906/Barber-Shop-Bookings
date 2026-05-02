@@ -685,7 +685,7 @@
           "comment": {
             "type": "string",
             "minLength": 5,
-            "maxLength": 150
+            "maxLength": 100
           }
         }
       },
@@ -3212,7 +3212,7 @@
         }
       },
       "post": {
-        "summary": "Create or update own review for barber",
+        "summary": "Create review for barber",
         "operationId": "upsertBarberReview",
         "security": [
           {

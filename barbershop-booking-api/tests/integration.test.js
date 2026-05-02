@@ -330,7 +330,7 @@ test('user can change password and login with new credentials', async (t) => {
   userToken = loginWithNewPasswordResponse.body.token;
 });
 
-test('user can create and update own barber review', async (t) => {
+test('user can create multiple own barber reviews', async (t) => {
   if (skipIfDbUnavailable(t)) return;
 
   const createReviewResponse = await request(app)
@@ -345,19 +345,20 @@ test('user can create and update own barber review', async (t) => {
   assert.equal(createReviewResponse.body.review.barber_id, barberId);
   assert.equal(Number(createReviewResponse.body.review.rating), 5);
 
-  const updateReviewResponse = await request(app)
+  const secondReviewResponse = await request(app)
     .post(`/api/barbers/${barberId}/reviews`)
     .set('Authorization', `Bearer ${userToken}`)
     .send({
       rating: 4,
-      comment: 'Updated review: still great, but minor wait.'
+      comment: 'Second review: still great, but minor wait.'
     });
 
-  assert.equal(updateReviewResponse.statusCode, 200);
-  assert.equal(Number(updateReviewResponse.body.review.rating), 4);
-  assert.equal(updateReviewResponse.body.barber.id, barberId);
+  assert.equal(secondReviewResponse.statusCode, 201);
+  assert.notEqual(secondReviewResponse.body.review.id, createReviewResponse.body.review.id);
+  assert.equal(Number(secondReviewResponse.body.review.rating), 4);
+  assert.equal(secondReviewResponse.body.barber.id, barberId);
 
-  const longComment = 'x'.repeat(151);
+  const longComment = 'x'.repeat(101);
   const tooLongCommentResponse = await request(app)
     .post(`/api/barbers/${barberId}/reviews`)
     .set('Authorization', `Bearer ${userToken}`)
@@ -373,10 +374,10 @@ test('user can create and update own barber review', async (t) => {
 
   const targetBarber = barbersResponse.body.find((barber) => barber.id === barberId);
   assert.ok(targetBarber);
-  assert.equal(Number(targetBarber.rating), Number(updateReviewResponse.body.barber.rating));
+  assert.equal(Number(targetBarber.rating), Number(secondReviewResponse.body.barber.rating));
   assert.equal(
     Number(targetBarber.reviews_count),
-    Number(updateReviewResponse.body.barber.reviews_count)
+    Number(secondReviewResponse.body.barber.reviews_count)
   );
   assert.ok(Number.isInteger(targetBarber.salon_id));
   assert.ok(targetBarber.salon);

@@ -469,7 +469,7 @@ const reviewCreateSchema = z.object({
   userId: z.coerce.number().int().positive().nullable().optional(),
   authorName: z.string().trim().min(2).max(120).optional(),
   rating: z.coerce.number().min(1).max(5),
-  comment: z.string().trim().min(2).max(150)
+  comment: z.string().trim().min(2).max(100)
 });
 
 const reviewUpdateSchema = z.object({
@@ -477,7 +477,7 @@ const reviewUpdateSchema = z.object({
   userId: z.coerce.number().int().positive().nullable().optional(),
   authorName: z.string().trim().min(2).max(120).optional(),
   rating: z.coerce.number().min(1).max(5).optional(),
-  comment: z.string().trim().min(2).max(150).optional()
+  comment: z.string().trim().min(2).max(100).optional()
 });
 
 const reviewListQuerySchema = z.object({

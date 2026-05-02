@@ -11,6 +11,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "mobile:build": "npm run build && npx cap sync",
+    "android:add": "npx cap add android",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:open": "npx cap open android",
     "api:types": "openapi-typescript ./barbershop-booking-api/src/docs/openapi.json -o ./src/api/generated/openapi.ts",
     "local:up": "powershell -ExecutionPolicy Bypass -File ./scripts/local-dev.ps1",
     "local:up:detached": "powershell -ExecutionPolicy Bypass -File ./scripts/local-dev.ps1 -Detached",
@@ -74,6 +78,9 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/cli": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
     "@eslint/js": "^9.32.0",
     "@playwright/test": "^1.57.0",
     "@tailwindcss/typography": "^0.5.16",

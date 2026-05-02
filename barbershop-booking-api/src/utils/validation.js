@@ -99,7 +99,7 @@ const bookingSchema = z.object({
 
 const reviewCreateSchema = z.object({
   rating: z.coerce.number().int().min(1).max(5),
-  comment: z.string().trim().min(5).max(150)
+  comment: z.string().trim().min(5).max(100)
 });
 
 const loginSchema = z.object({

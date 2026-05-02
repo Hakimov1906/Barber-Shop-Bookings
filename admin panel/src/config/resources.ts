@@ -499,7 +499,7 @@ const reviewsConfig: ResourceConfig = {
     { key: "userId", entityKey: "user_id", label: "User ID", kind: "number", min: 1 },
     { key: "authorName", entityKey: "author_name", label: "Автор", kind: "text" },
     { key: "rating", label: "Рейтинг", kind: "number", required: true, min: 1, max: 5, step: 0.1 },
-    { key: "comment", label: "Комментарий", kind: "textarea", required: true, minLength: 2, maxLength: 150 },
+    { key: "comment", label: "Комментарий", kind: "textarea", required: true, minLength: 2, maxLength: 100 },
   ],
   defaultSort: { key: "id", direction: "desc" },
   searchKeys: ["id", "barber_id", "user_id", "author_name", "comment"],
@@ -640,4 +640,3 @@ export function toIdRecord(config: ResourceConfig, row: FormValues): Record<stri
   }
   return ids;
 }
-

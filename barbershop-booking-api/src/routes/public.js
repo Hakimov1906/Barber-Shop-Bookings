@@ -204,58 +204,21 @@ router.post('/barbers/:id/reviews', requireAuth, requireRole('user'), async (req
     }
 
     const createdAt = new Date().toISOString();
-    const existingReviewRes = await client.query(
+    const reviewRes = await client.query(
       `
-      SELECT id
-      FROM reviews
-      WHERE barber_id = $1 AND user_id = $2
-      LIMIT 1
-      FOR UPDATE
+      INSERT INTO reviews (barber_id, user_id, author_name, rating, comment, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6::timestamptz)
+      RETURNING id, barber_id, author_name, rating, comment, created_at
       `,
-      [barberId, userId]
+      [
+        barberId,
+        userId,
+        userRes.rows[0].full_name,
+        data.rating,
+        data.comment,
+        createdAt
+      ]
     );
-
-    let inserted = false;
-    let reviewRes;
-    if (existingReviewRes.rowCount) {
-      reviewRes = await client.query(
-        `
-        UPDATE reviews
-        SET
-          author_name = $3,
-          rating = $4,
-          comment = $5,
-          created_at = $6::timestamptz
-        WHERE id = $1 AND user_id = $2
-        RETURNING id, barber_id, author_name, rating, comment, created_at
-        `,
-        [
-          existingReviewRes.rows[0].id,
-          userId,
-          userRes.rows[0].full_name,
-          data.rating,
-          data.comment,
-          createdAt
-        ]
-      );
-    } else {
-      inserted = true;
-      reviewRes = await client.query(
-        `
-        INSERT INTO reviews (barber_id, user_id, author_name, rating, comment, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6::timestamptz)
-        RETURNING id, barber_id, author_name, rating, comment, created_at
-        `,
-        [
-          barberId,
-          userId,
-          userRes.rows[0].full_name,
-          data.rating,
-          data.comment,
-          createdAt
-        ]
-      );
-    }
 
     const statsRes = await client.query(
       `
@@ -279,7 +242,7 @@ router.post('/barbers/:id/reviews', requireAuth, requireRole('user'), async (req
 
     const review = reviewRes.rows[0];
     const barber = statsRes.rows[0];
-    res.status(inserted ? 201 : 200).json({
+    res.status(201).json({
       review: {
         id: review.id,
         barber_id: review.barber_id,

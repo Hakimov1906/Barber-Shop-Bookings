@@ -94,7 +94,7 @@ const KG_PHONE_REGEX = /^\+996\d{9}$/;
 const MIN_PASSWORD_LENGTH = 6;
 const MAX_PASSWORD_LENGTH = 20;
 const PASSWORD_REGEX = /^[A-Za-z0-9]+$/;
-const MAX_REVIEW_COMMENT_LENGTH = 150;
+const MAX_REVIEW_COMMENT_LENGTH = 100;
 const MOCK_SLOT_TIMES = [
   "10:00",
   "10:30",
@@ -812,30 +812,17 @@ const mockApi = {
     ensureMockReviewsSeeded();
     const reviews = loadMockReviews();
     const now = new Date().toISOString();
-    const existing = reviews.find(
-      (review) => review.barberId === barberId && review.userId === userId,
-    );
-
-    let saved: MockReviewRecord;
-    if (existing) {
-      existing.rating = body.rating;
-      existing.comment = comment;
-      existing.createdAt = now;
-      existing.authorName = user.fullName;
-      saved = existing;
-    } else {
-      const nextId = reviews.reduce((max, review) => Math.max(max, review.id), 0) + 1;
-      saved = {
-        id: nextId,
-        barberId,
-        userId,
-        authorName: user.fullName,
-        rating: body.rating,
-        comment,
-        createdAt: now,
-      };
-      reviews.push(saved);
-    }
+    const nextId = reviews.reduce((max, review) => Math.max(max, review.id), 0) + 1;
+    const saved: MockReviewRecord = {
+      id: nextId,
+      barberId,
+      userId,
+      authorName: user.fullName,
+      rating: body.rating,
+      comment,
+      createdAt: now,
+    };
+    reviews.push(saved);
 
     saveMockReviews(reviews);
 

@@ -12,7 +12,7 @@ import { ApiError, api } from "@/lib/api";
 import { mapApiReviewsToMasterReviews } from "@/lib/masters";
 
 const MIN_REVIEW_LENGTH = 5;
-const MAX_REVIEW_LENGTH = 150;
+const MAX_REVIEW_LENGTH = 100;
 
 const MasterDetail = () => {
   const { id } = useParams();

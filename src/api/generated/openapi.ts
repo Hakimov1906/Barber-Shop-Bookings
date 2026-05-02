@@ -554,7 +554,7 @@ export interface paths {
         /** List barber reviews */
         get: operations["getBarberReviews"];
         put?: never;
-        /** Create or update own review for barber */
+        /** Create review for barber */
         post: operations["upsertBarberReview"];
         delete?: never;
         options?: never;

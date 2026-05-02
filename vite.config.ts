@@ -22,12 +22,15 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
       },
       manifest: {
-        name: "Hairline Style Shop",
-        short_name: "HairlineShop",
-        description: "Your premier destination for hair styling and beauty services",
-        theme_color: "#ffffff",
+        name: "HairLine — запись в барбершоп",
+        short_name: "HairLine",
+        description: "Онлайн-запись в салоны HairLine, выбор мастера, услуги и профиль клиента.",
+        theme_color: "#111827",
         background_color: "#ffffff",
         display: "standalone",
+        orientation: "portrait-primary",
+        start_url: "/",
+        scope: "/",
         icons: [
           {
             src: "/favicon.ico",
@@ -35,9 +38,16 @@ export default defineConfig(({ mode }) => ({
             type: "image/x-icon",
           },
           {
-            src: "/placeholder.svg",
+            src: "/app-icon.svg",
             sizes: "192x192",
             type: "image/svg+xml",
+            purpose: "any",
+          },
+          {
+            src: "/app-icon-maskable.svg",
+            sizes: "512x512",
+            type: "image/svg+xml",
+            purpose: "maskable",
           },
         ],
       },
