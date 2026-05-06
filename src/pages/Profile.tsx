@@ -2,6 +2,17 @@ import { Link, NavLink, Outlet } from "react-router-dom";
 import { LogOut, User, ListChecks, Settings } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Profile = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -71,13 +82,34 @@ const Profile = () => {
           </nav>
 
           <div className="mt-4 flex flex-col gap-2 border-t border-border pt-4">
-            <button
-              onClick={logout}
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-destructive px-4 text-sm font-medium text-destructive-foreground transition hover:bg-destructive/90"
-            >
-              <LogOut className="h-4 w-4" />
-              {tr("nav.logout")}
-            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-destructive px-4 text-sm font-medium text-destructive-foreground transition hover:bg-destructive/90"
+                >
+                  <LogOut className="h-4 w-4" />
+                  {tr("nav.logout")}
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{tr("profile.logout.confirm.title")}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {tr("profile.logout.confirm.desc")}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{tr("profile.logout.confirm.cancel")}</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={logout}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {tr("profile.logout.confirm.action")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </aside>
 

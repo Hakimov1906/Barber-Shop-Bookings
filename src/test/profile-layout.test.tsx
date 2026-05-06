@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it } from "vitest";
 import Profile from "@/pages/Profile";
@@ -41,5 +41,36 @@ describe("Profile navigation", () => {
     expect(screen.queryByRole("link", { name: "Shop" })).not.toBeInTheDocument();
 
     expect(screen.getByRole("button", { name: "Sign out" })).toBeInTheDocument();
+  });
+
+  it("asks for confirmation before signing out", async () => {
+    renderWithProviders(
+      <Routes>
+        <Route path="/profile" element={<Profile />}>
+          <Route index element={<div>Info content</div>} />
+        </Route>
+      </Routes>,
+      { route: "/profile" },
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+
+    expect(screen.getByRole("alertdialog")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Sign out?" })).toBeInTheDocument();
+    expect(screen.getByText("Info content")).toBeInTheDocument();
+    expect(localStorage.getItem("hairline-auth")).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
+    });
+    expect(localStorage.getItem("hairline-auth")).not.toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Sign out" }));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm sign out" }));
+
+    expect(localStorage.getItem("hairline-auth")).toBeNull();
+    expect(screen.getByRole("link", { name: "Sign in" })).toBeInTheDocument();
   });
 });
