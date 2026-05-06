@@ -15,12 +15,16 @@
     "android:add": "npx cap add android",
     "android:sync": "npm run build && npx cap sync android",
     "android:open": "npx cap open android",
+    "ios:add": "npx cap add ios",
+    "ios:sync": "npm run build && npx cap sync ios",
+    "ios:open": "npx cap open ios",
     "api:types": "openapi-typescript ./barbershop-booking-api/src/docs/openapi.json -o ./src/api/generated/openapi.ts",
     "local:up": "powershell -ExecutionPolicy Bypass -File ./scripts/local-dev.ps1",
     "local:up:detached": "powershell -ExecutionPolicy Bypass -File ./scripts/local-dev.ps1 -Detached",
     "local:down": "powershell -ExecutionPolicy Bypass -File ./scripts/local-stop.ps1"
   },
   "dependencies": {
+    "@capacitor/ios": "^8.3.1",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",

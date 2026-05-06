@@ -22,7 +22,7 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: CORS_ORIGIN
-        value: https://hairline-bookings.vercel.app,https://hairline-admin-panel.vercel.app
+        value: "*"
   - type: cron
     name: barbershop-seed-refresh
     runtime: node

@@ -1,4 +1,4 @@
-const PROD_API_BASE_URL = "https://test-4p5l.onrender.com";
+const PROD_API_BASE_URL = "https://barbershop-booking-api.onrender.com"; // Render.com API
 
 function normalizeBaseUrl(value: string) {
   return value.trim().replace(/\/+$/, "");
