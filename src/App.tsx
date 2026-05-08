@@ -14,6 +14,7 @@ const Masters = lazy(() => import("./pages/Masters"));
 const MasterDetail = lazy(() => import("./pages/MasterDetail"));
 const Shop = lazy(() => import("./pages/Shop"));
 const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Profile = lazy(() => import("./pages/Profile"));
 const ProfileInfo = lazy(() => import("./pages/ProfileInfo"));
@@ -44,6 +45,7 @@ const App = () => (
                     <Route path="/masters/:id" element={<MasterDetail />} />
                     <Route path="/shop" element={<Shop />} />
                     <Route path="/cart" element={<Cart />} />
+                    <Route path="/checkout" element={<Checkout />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />}>
                       <Route index element={<ProfileInfo />} />

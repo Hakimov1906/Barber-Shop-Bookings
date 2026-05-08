@@ -121,7 +121,9 @@ const Cart = ({ isEmbedded = false }: CartProps) => {
             <Button variant="secondary" onClick={() => void clearCart()} disabled={isLoading}>
               {tr("cart.clear")}
             </Button>
-            <Button>{tr("cart.checkout")}</Button>
+            <Button asChild>
+              <Link to="/checkout">{tr("cart.checkout")}</Link>
+            </Button>
           </div>
         </div>
       </div>
