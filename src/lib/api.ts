@@ -9,6 +9,7 @@ import {
   MAX_ACTIVE_BOOKINGS_PER_USER,
   USE_MOCK_API,
 } from "@/lib/config";
+import { isValidPhoneNumber } from "@/lib/phone";
 
 export type ApiBarber = components["schemas"]["Barber"];
 export type ApiService = components["schemas"]["Service"];
@@ -90,7 +91,6 @@ const MOCK_USERS_KEY = "hairline-mock-users";
 const MOCK_BOOKINGS_KEY = "hairline-mock-bookings";
 const MOCK_REVIEWS_KEY = "hairline-mock-reviews";
 const MOCK_CART_KEY = "hairline-mock-cart";
-const KG_PHONE_REGEX = /^\+996\d{9}$/;
 const MIN_PASSWORD_LENGTH = 6;
 const MAX_PASSWORD_LENGTH = 20;
 const PASSWORD_REGEX = /^[A-Za-z0-9]+$/;
@@ -400,7 +400,7 @@ const mockApi = {
     if (
       fullName.length < 2 ||
       fullName.length > 120 ||
-      !KG_PHONE_REGEX.test(phone) ||
+      !isValidPhoneNumber(phone) ||
       passwordLength < MIN_PASSWORD_LENGTH ||
       passwordLength > MAX_PASSWORD_LENGTH ||
       !PASSWORD_REGEX.test(body.password)
@@ -438,7 +438,7 @@ const mockApi = {
     await wait();
     const users = loadMockUsers();
     const phone = body.phone.trim();
-    if (!KG_PHONE_REGEX.test(phone) || !body.password?.length) {
+    if (!isValidPhoneNumber(phone) || !body.password?.length) {
       throw new ApiError("Invalid payload", 400);
     }
     const found = users.find((user) => user.phone === phone);
@@ -604,7 +604,7 @@ const mockApi = {
     }
 
     const phone = body.phone?.trim();
-    if (phone && !KG_PHONE_REGEX.test(phone)) {
+    if (phone && !isValidPhoneNumber(phone)) {
       throw new ApiError("Invalid payload", 400);
     }
 

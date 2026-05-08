@@ -7,9 +7,14 @@ import { ApiError, api } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { PasswordInput } from "@/components/PasswordInput";
 import {
-  KG_PHONE_PREFIX,
-  KG_PHONE_TOTAL_LENGTH,
-  normalizeKgPhoneInput,
+  DEFAULT_PHONE_COUNTRY,
+  PHONE_COUNTRIES,
+  detectPhoneCountry,
+  getPhoneMaxLength,
+  getPhonePattern,
+  getPhonePrefix,
+  normalizePhoneInput,
+  type PhoneCountry,
 } from "@/lib/phone";
 
 const MIN_PASSWORD_LENGTH = 6;
@@ -20,24 +25,27 @@ const ProfileSettings = () => {
   const { user, token, syncUser } = useAuth();
   const { tr } = useI18n();
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState(KG_PHONE_PREFIX);
+  const [phoneCountry, setPhoneCountry] = useState<PhoneCountry>(DEFAULT_PHONE_COUNTRY);
+  const [phone, setPhone] = useState(getPhonePrefix(DEFAULT_PHONE_COUNTRY));
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
 
   useEffect(() => {
     if (!user) return;
+    const detectedCountry = detectPhoneCountry(user.phone);
     setFullName(user.fullName);
-    setPhone(user.phone);
+    setPhoneCountry(detectedCountry);
+    setPhone(normalizePhoneInput(user.phone, detectedCountry));
   }, [user]);
 
   const hasChanges = useMemo(() => {
     if (!user) return false;
     return (
       fullName.trim() !== user.fullName ||
-      phone.trim() !== user.phone
+      normalizePhoneInput(phone, phoneCountry) !== user.phone
     );
-  }, [user, fullName, phone]);
+  }, [user, fullName, phone, phoneCountry]);
 
   const currentPasswordValue = currentPassword.trim();
   const passwordTooShort = newPassword.length > 0 && newPassword.length < MIN_PASSWORD_LENGTH;
@@ -58,15 +66,22 @@ const ProfileSettings = () => {
   );
 
   const handlePhoneChange = (value: string) => {
-    setPhone(normalizeKgPhoneInput(value));
+    setPhone(normalizePhoneInput(value, phoneCountry));
+  };
+
+  const handlePhoneCountryChange = (value: string) => {
+    const nextCountry = value as PhoneCountry;
+    setPhoneCountry(nextCountry);
+    setPhone(getPhonePrefix(nextCountry));
   };
 
   const handlePhoneKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     const selectionStart = event.currentTarget.selectionStart ?? 0;
     const selectionEnd = event.currentTarget.selectionEnd ?? 0;
+    const prefix = getPhonePrefix(phoneCountry);
     const affectsPrefix =
-      (event.key === "Backspace" && selectionStart <= KG_PHONE_PREFIX.length) ||
-      (event.key === "Delete" && selectionStart < KG_PHONE_PREFIX.length);
+      (event.key === "Backspace" && selectionStart <= prefix.length) ||
+      (event.key === "Delete" && selectionStart < prefix.length);
 
     if (affectsPrefix && selectionStart === selectionEnd) {
       event.preventDefault();
@@ -81,7 +96,7 @@ const ProfileSettings = () => {
 
       const payload: { fullName?: string; phone?: string } = {};
       const fullNameValue = fullName.trim();
-      const phoneValue = normalizeKgPhoneInput(phone);
+      const phoneValue = normalizePhoneInput(phone, phoneCountry);
 
       if (fullNameValue !== user.fullName) {
         payload.fullName = fullNameValue;
@@ -198,19 +213,33 @@ const ProfileSettings = () => {
             >
               {tr("profile.field.phone")}
             </label>
-            <input
-              id="profile-phone"
-              value={phone}
-              onChange={(event) => handlePhoneChange(event.target.value)}
-              onKeyDown={handlePhoneKeyDown}
-              onFocus={() => setPhone((current) => normalizeKgPhoneInput(current))}
-              type="tel"
-              inputMode="numeric"
-              maxLength={KG_PHONE_TOTAL_LENGTH}
-              pattern="^\+996\d{9}$"
-              className="h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
-              required
-            />
+            <div className="flex gap-2">
+              <select
+                aria-label="Phone country"
+                value={phoneCountry}
+                onChange={(event) => handlePhoneCountryChange(event.target.value)}
+                className="h-11 w-36 rounded-lg border-0 bg-secondary px-3 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
+              >
+                {PHONE_COUNTRIES.map((country) => (
+                  <option key={country.code} value={country.code}>
+                    {country.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                id="profile-phone"
+                value={phone}
+                onChange={(event) => handlePhoneChange(event.target.value)}
+                onKeyDown={handlePhoneKeyDown}
+                onFocus={() => setPhone((current) => normalizePhoneInput(current, phoneCountry))}
+                type="tel"
+                inputMode="numeric"
+                maxLength={getPhoneMaxLength(phoneCountry)}
+                pattern={getPhonePattern(phoneCountry)}
+                className="h-11 min-w-0 flex-1 rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
+                required
+              />
+            </div>
           </div>
 
           <button

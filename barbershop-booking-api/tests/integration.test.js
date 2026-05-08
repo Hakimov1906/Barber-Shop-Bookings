@@ -181,6 +181,33 @@ test('rejects legacy email login payload and invalid phone format', async (t) =>
   assert.equal(invalidPhoneRegisterResponse.statusCode, 400);
 });
 
+test('accepts Russian phone format for user registration and login', async (t) => {
+  if (skipIfDbUnavailable(t)) return;
+
+  const russianPhone = `+7900${String(Date.now()).slice(-7)}`;
+  t.after(async () => {
+    await pool.query('DELETE FROM users WHERE phone = $1', [russianPhone]);
+  });
+
+  const registerResponse = await request(app)
+    .post('/api/auth/register')
+    .send({
+      fullName: 'Russian Phone User',
+      phone: russianPhone,
+      password
+    });
+
+  assert.equal(registerResponse.statusCode, 201);
+  assert.equal(registerResponse.body.user.phone, russianPhone);
+
+  const loginResponse = await request(app)
+    .post('/api/auth/login')
+    .send({ phone: russianPhone, password });
+
+  assert.equal(loginResponse.statusCode, 200);
+  assert.equal(loginResponse.body.user.phone, russianPhone);
+});
+
 test('enforces password max length for register and password update', async (t) => {
   if (skipIfDbUnavailable(t)) return;
 

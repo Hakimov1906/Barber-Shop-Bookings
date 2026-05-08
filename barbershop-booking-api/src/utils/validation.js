@@ -2,7 +2,7 @@ const { z } = require('zod');
 
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/;
-const phoneRegex = /^\+996\d{9}$/;
+const phoneRegex = /^(\+996\d{9}|\+7\d{10}|\+998\d{9}|\+992\d{9}|\+994\d{9}|\+374\d{8}|\+995\d{9}|\+90\d{10}|\+971\d{9}|\+1\d{10})$/;
 const passwordRegex = /^[A-Za-z0-9]+$/;
 const passwordSchema = z
   .string()

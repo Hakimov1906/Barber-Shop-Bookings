@@ -8,15 +8,21 @@ import { toast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
 import { PasswordInput } from "@/components/PasswordInput";
 import {
-  KG_PHONE_PREFIX,
-  KG_PHONE_TOTAL_LENGTH,
-  normalizeKgPhoneInput,
+  DEFAULT_PHONE_COUNTRY,
+  PHONE_COUNTRIES,
+  getPhoneMaxLength,
+  getPhonePattern,
+  getPhonePlaceholder,
+  getPhonePrefix,
+  normalizePhoneInput,
+  type PhoneCountry,
 } from "@/lib/phone";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState(KG_PHONE_PREFIX);
+  const [phoneCountry, setPhoneCountry] = useState<PhoneCountry>(DEFAULT_PHONE_COUNTRY);
+  const [phone, setPhone] = useState(getPhonePrefix(DEFAULT_PHONE_COUNTRY));
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,13 +39,14 @@ const Auth = () => {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsSubmitting(true);
+    const phoneValue = normalizePhoneInput(phone, phoneCountry);
     try {
       if (isLogin) {
-        await login(phone.trim(), password);
+        await login(phoneValue, password);
       } else {
         await register({
           fullName: fullName.trim(),
-          phone: phone.trim(),
+          phone: phoneValue,
           password,
         });
       }
@@ -62,15 +69,22 @@ const Auth = () => {
   };
 
   const handlePhoneChange = (value: string) => {
-    setPhone(normalizeKgPhoneInput(value));
+    setPhone(normalizePhoneInput(value, phoneCountry));
+  };
+
+  const handlePhoneCountryChange = (value: string) => {
+    const nextCountry = value as PhoneCountry;
+    setPhoneCountry(nextCountry);
+    setPhone(getPhonePrefix(nextCountry));
   };
 
   const handlePhoneKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     const selectionStart = event.currentTarget.selectionStart ?? 0;
     const selectionEnd = event.currentTarget.selectionEnd ?? 0;
+    const prefix = getPhonePrefix(phoneCountry);
     const affectsPrefix =
-      (event.key === "Backspace" && selectionStart <= KG_PHONE_PREFIX.length) ||
-      (event.key === "Delete" && selectionStart < KG_PHONE_PREFIX.length);
+      (event.key === "Backspace" && selectionStart <= prefix.length) ||
+      (event.key === "Delete" && selectionStart < prefix.length);
 
     if (affectsPrefix && selectionStart === selectionEnd) {
       event.preventDefault();
@@ -134,19 +148,33 @@ const Auth = () => {
 
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  value={phone}
-                  onChange={(event) => handlePhoneChange(event.target.value)}
-                  onKeyDown={handlePhoneKeyDown}
-                  onFocus={() => setPhone((current) => normalizeKgPhoneInput(current))}
-                  required
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={KG_PHONE_TOTAL_LENGTH}
-                  pattern="^\+996\d{9}$"
-                  placeholder={tr("auth.field.phone.placeholder")}
-                  className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
-                />
+                <div className="flex gap-2">
+                  <select
+                    aria-label="Phone country"
+                    value={phoneCountry}
+                    onChange={(event) => handlePhoneCountryChange(event.target.value)}
+                    className="h-11 w-36 rounded-lg border-0 bg-secondary py-3 pl-10 pr-3 text-sm text-foreground outline-none ring-1 ring-border transition-shadow focus:ring-2 focus:ring-foreground"
+                  >
+                    {PHONE_COUNTRIES.map((country) => (
+                      <option key={country.code} value={country.code}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    value={phone}
+                    onChange={(event) => handlePhoneChange(event.target.value)}
+                    onKeyDown={handlePhoneKeyDown}
+                    onFocus={() => setPhone((current) => normalizePhoneInput(current, phoneCountry))}
+                    required
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={getPhoneMaxLength(phoneCountry)}
+                    pattern={getPhonePattern(phoneCountry)}
+                    placeholder={getPhonePlaceholder(phoneCountry)}
+                    className="h-11 min-w-0 flex-1 rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
+                  />
+                </div>
               </div>
 
               <div className="relative">

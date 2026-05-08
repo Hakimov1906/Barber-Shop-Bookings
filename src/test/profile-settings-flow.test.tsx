@@ -62,6 +62,42 @@ describe("Profile settings flow", () => {
     });
   });
 
+  it("saves phone with the selected country prefix and length limit", async () => {
+    mockApi.updateProfile.mockResolvedValue({
+      user: {
+        id: 1,
+        full_name: "Test User",
+        phone: "+79161234567",
+        created_at: "2099-01-01T00:00:00.000Z",
+      },
+    });
+
+    renderWithProviders(
+      <Routes>
+        <Route path="/profile/settings" element={<ProfileSettings />} />
+      </Routes>,
+      { route: "/profile/settings" },
+    );
+
+    fireEvent.change(screen.getByLabelText("Phone country"), {
+      target: { value: "ru" },
+    });
+
+    const phoneInput = screen.getByLabelText("Phone");
+    expect(phoneInput).toHaveAttribute("maxLength", "12");
+
+    fireEvent.change(phoneInput, {
+      target: { value: "+7916123456789" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => {
+      expect(mockApi.updateProfile).toHaveBeenCalledWith("token-xyz", {
+        phone: "+79161234567",
+      });
+    });
+  });
+
   it("blocks submit on password mismatch and submits valid password change", async () => {
     mockApi.updatePassword.mockResolvedValue({ status: "password_updated" });
 

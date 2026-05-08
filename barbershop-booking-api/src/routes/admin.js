@@ -14,7 +14,7 @@ const adminLoginRateLimiter = createRateLimit({
   message: 'Too many admin login attempts. Try again later.'
 });
 
-const phoneRegex = /^\+996\d{9}$/;
+const phoneRegex = /^(\+996\d{9}|\+7\d{10}|\+998\d{9}|\+992\d{9}|\+994\d{9}|\+374\d{8}|\+995\d{9}|\+90\d{10}|\+971\d{9}|\+1\d{10})$/;
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
 const passwordRegex = /^[A-Za-z0-9]+$/;
