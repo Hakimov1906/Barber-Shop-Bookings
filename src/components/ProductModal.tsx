@@ -7,10 +7,9 @@ const ProductModal = ({ product, onClose }: { product: Product; onClose: () => v
   const { tv, price } = useI18n();
   const { addToCart } = useCart();
 
-  const handleAddToCart = () => {
-    addToCart(product);
-    onClose();
-  };
+   const handleAddToCart = () => {
+     addToCart(product);
+   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
