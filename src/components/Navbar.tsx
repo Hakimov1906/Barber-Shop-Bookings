@@ -1,21 +1,20 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, User, ShoppingCart } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingCart, User, Globe } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { useAuth } from "@/lib/auth";
 import { useCart } from "@/lib/cart";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
   const [badgePulse, setBadgePulse] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const location = useLocation();
-  const { tr } = useI18n();
+  const { tr, lang } = useI18n();
   const { isAuthenticated } = useAuth();
   const { totalItems } = useCart();
   const previousTotal = useRef(totalItems);
+  const langRef = useRef<HTMLDivElement>(null);
 
   const navLinks = [
     { to: "/", label: tr("nav.home") },
@@ -50,7 +49,17 @@ const Navbar = () => {
     };
   }, [totalItems]);
 
-  useEffect(() => setMobileOpen(false), [location]);
+  useEffect(() => {
+    const handler = (event: MouseEvent) => {
+      if (langRef.current && !langRef.current.contains(event.target as Node)) {
+        setLangOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const langLabels: Record<string, string> = { ky: "KY", ru: "RU", en: "EN" };
 
   return (
     <header
@@ -83,49 +92,78 @@ const Navbar = () => {
           ))}
         </div>
 
-        <div className="hidden items-center gap-3 md:flex">
-          <LanguageSwitcher />
-          <Link
-            to="/cart"
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-secondary/80 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <motion.span
-              animate={badgePulse ? { scale: [1, 1.3, 1] } : { scale: 1 }}
-              transition={{ duration: 0.25 }}
-              className="relative"
+        <div className="flex items-center gap-2">
+          {/* Language switcher - visible on all screens */}
+          <div ref={langRef} className="relative">
+            <button
+              onClick={() => setLangOpen(!langOpen)}
+              className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-background/80 backdrop-blur-sm px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-all hover:text-foreground hover:border-border md:flex"
+              aria-label={tr("lang.switch")}
             >
-              <ShoppingCart className="h-5 w-5" />
-              {totalItems > 0 && (
-                <span className="absolute -right-2 -top-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-destructive px-1.5 text-[0.65rem] font-semibold text-destructive-foreground">
-                  {totalItems}
-                </span>
-              )}
-            </motion.span>
-          </Link>
-          {isAuthenticated ? (
-            <Link
-              to="/profile"
-              className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:scale-95"
-            >
-              <User className="h-4 w-4" />
-              {tr("nav.profile")}
-            </Link>
-          ) : (
-            <Link
-              to="/auth"
-              className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:scale-95"
-            >
-              <User className="h-4 w-4" />
-              {tr("nav.login")}
-            </Link>
-          )}
-        </div>
+              <Globe className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{langLabels[lang]}</span>
+            </button>
 
-        <div className="flex items-center gap-2 md:hidden">
-          <LanguageSwitcher />
+            {langOpen && (
+              <div className="absolute right-0 top-full mt-1 z-50 min-w-[100px] overflow-hidden rounded-lg border border-border bg-card card-shadow animate-in fade-in-0 zoom-in-95">
+                {(["ky", "ru", "en"] as const).map((language) => (
+                  <button
+                    key={language}
+                    onClick={() => {
+                      setLang(language);
+                      setLangOpen(false);
+                    }}
+                    className={`flex w-full items-center gap-2 px-3 py-2 text-xs transition-colors ${
+                      lang === language
+                        ? "bg-primary/5 text-foreground font-medium"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                    }`}
+                  >
+                    <span>{langLabels[language]}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop: cart + profile */}
+          <div className="hidden items-center gap-3 md:flex">
+            <Link
+              to="/cart"
+              className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-secondary/80 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <span className="relative">
+                <ShoppingCart className="h-5 w-5" />
+                {totalItems > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-destructive px-1.5 text-[0.65rem] font-semibold text-destructive-foreground">
+                    {totalItems}
+                  </span>
+                )}
+              </span>
+            </Link>
+            {isAuthenticated ? (
+              <Link
+                to="/profile"
+                className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:scale-95"
+              >
+                <User className="h-4 w-4" />
+                {tr("nav.profile")}
+              </Link>
+            ) : (
+              <Link
+                to="/auth"
+                className="inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 active:scale-95"
+              >
+                <User className="h-4 w-4" />
+                {tr("nav.login")}
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile: cart only */}
           <Link
             to="/cart"
-            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-secondary/80 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-secondary/80 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden"
           >
             <ShoppingCart className="h-5 w-5" />
             {totalItems > 0 && (
@@ -134,61 +172,8 @@ const Navbar = () => {
               </span>
             )}
           </Link>
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-secondary/80 text-foreground transition-colors hover:bg-secondary"
-            aria-label={mobileOpen ? tr("nav.closeMenu") : tr("nav.openMenu")}
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
         </div>
       </nav>
-
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="border-b border-border bg-background/95 backdrop-blur-md md:hidden"
-          >
-            <div className="page-shell pb-4 pt-2">
-              <div className="space-y-1 rounded-2xl border border-border bg-card p-2 shadow-sm">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.to}
-                    to={link.to}
-                    className={`block rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                      isActiveLink(link.to)
-                        ? "bg-secondary font-medium text-foreground"
-                        : "text-muted-foreground hover:bg-secondary/80"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-                {isAuthenticated ? (
-                  <Link
-                    to="/profile"
-                    className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground"
-                  >
-                    <User className="h-4 w-4" />
-                    {tr("nav.profile")}
-                  </Link>
-                ) : (
-                  <Link
-                    to="/auth"
-                    className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground"
-                  >
-                    <User className="h-4 w-4" />
-                    {tr("nav.login")}
-                  </Link>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </header>
   );
 };

@@ -4,7 +4,12 @@ import { useEffect, useRef, useState } from "react";
 
 const labels: Record<Lang, string> = { ky: "KY", ru: "RU", en: "EN" };
 
-const LanguageSwitcher = () => {
+interface LanguageSwitcherProps {
+  placement?: "bottom" | "top";
+  compact?: boolean;
+}
+
+const LanguageSwitcher = ({ placement = "bottom", compact = false }: LanguageSwitcherProps) => {
   const { lang, setLang, tr } = useI18n();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -19,6 +24,10 @@ const LanguageSwitcher = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  const dropdownPosition = placement === "top"
+    ? "bottom-full mb-2"
+    : "top-full mt-1";
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -27,11 +36,11 @@ const LanguageSwitcher = () => {
         aria-label={tr("lang.switch")}
       >
         <Globe className="h-3.5 w-3.5" />
-        {labels[lang]}
+        {!compact && <span>{labels[lang]}</span>}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 min-w-[100px] overflow-hidden rounded-lg border border-border bg-card card-shadow animate-in fade-in-0 zoom-in-95">
+        <div className={`absolute right-0 ${dropdownPosition} z-50 min-w-[100px] overflow-hidden rounded-lg border border-border bg-card card-shadow animate-in fade-in-0 zoom-in-95`}>
           {(["ky", "ru", "en"] as Lang[]).map((language) => (
             <button
               key={language}
