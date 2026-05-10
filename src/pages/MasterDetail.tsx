@@ -350,7 +350,7 @@ const MasterDetail = () => {
             value={reviewComment}
             onChange={(event) => setReviewComment(event.target.value.slice(0, MAX_REVIEW_LENGTH))}
             placeholder={tr("master.review.form.placeholder")}
-            className="mt-4 min-h-[110px] w-full rounded-lg border-0 bg-secondary px-4 py-3 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
+            className="mt-4 min-h-[110px] w-full min-w-0 box-border rounded-lg border-0 bg-secondary px-4 py-3 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
             disabled={!isAuthenticated || reviewMutation.isPending}
             maxLength={MAX_REVIEW_LENGTH}
           />

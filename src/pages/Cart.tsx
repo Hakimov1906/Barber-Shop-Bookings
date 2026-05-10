@@ -70,18 +70,18 @@ const Cart = ({ isEmbedded = false }: CartProps) => {
                   >
                     −
                   </Button>
-                  <input
-                    type="number"
-                    min="1"
-                    value={item.quantity}
-                    onChange={(e) => {
-                      const newQuantity = Math.max(1, Number(e.target.value));
-                      setQuantity(item.id, newQuantity);
-                    }}
-                    disabled={isLoading}
-                    className="w-20 bg-transparent text-center text-lg font-semibold focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    style={{ MozAppearance: "textfield" }}
-                  />
+                   <input
+                     type="number"
+                     min="1"
+                     value={item.quantity}
+                     onChange={(e) => {
+                       const newQuantity = Math.max(1, Number(e.target.value));
+                       setQuantity(item.id, newQuantity);
+                     }}
+                     disabled={isLoading}
+                     className="w-16 sm:w-20 min-w-0 box-border bg-transparent text-center text-lg font-semibold focus:outline-none [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                     style={{ MozAppearance: "textfield" }}
+                   />
                   <Button
                     variant="outline"
                     size="sm"

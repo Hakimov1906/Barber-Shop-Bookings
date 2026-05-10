@@ -67,7 +67,7 @@ const copy: Record<
 };
 
 const inputClass =
-  "h-11 w-full rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground";
+  "h-10 sm:h-11 w-full min-w-0 box-border rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground";
 
 const Checkout = () => {
   const { tr, price, lang } = useI18n();
@@ -160,14 +160,14 @@ const Checkout = () => {
                 required
               />
             </label>
-            <label className="space-y-2 text-sm font-medium">
-              <span>{t.comment}</span>
-              <textarea
-                className="min-h-28 w-full rounded-lg border-0 bg-secondary px-4 py-3 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
-                value={comment}
-                onChange={(event) => setComment(event.target.value)}
-              />
-            </label>
+              <label className="space-y-2 text-sm font-medium">
+                <span>{t.comment}</span>
+                <textarea
+                  className="min-h-28 w-full min-w-0 box-border rounded-lg border-0 bg-secondary px-4 py-3 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
+                  value={comment}
+                  onChange={(event) => setComment(event.target.value)}
+                />
+              </label>
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">

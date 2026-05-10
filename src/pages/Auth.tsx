@@ -132,19 +132,19 @@ const Auth = () => {
 
           <div className="p-6 sm:p-8">
             <form className="space-y-4" onSubmit={handleSubmit}>
-              {!isLogin && (
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    value={fullName}
-                    onChange={(event) => setFullName(event.target.value)}
-                    required
-                    type="text"
-                    placeholder={tr("auth.field.fullName")}
-                    className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
-                  />
-                </div>
-              )}
+               {!isLogin && (
+                 <div className="relative">
+                   <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                   <input
+                     value={fullName}
+                     onChange={(event) => setFullName(event.target.value)}
+                     required
+                     type="text"
+                     placeholder={tr("auth.field.fullName")}
+                     className="h-10 sm:h-11 w-full min-w-0 box-border rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
+                   />
+                 </div>
+               )}
 
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -153,7 +153,7 @@ const Auth = () => {
                     aria-label="Phone country"
                     value={phoneCountry}
                     onChange={(event) => handlePhoneCountryChange(event.target.value)}
-                    className="h-11 w-36 rounded-lg border-0 bg-secondary py-3 pl-10 pr-3 text-sm text-foreground outline-none ring-1 ring-border transition-shadow focus:ring-2 focus:ring-foreground"
+                    className="h-10 sm:h-11 w-36 box-border rounded-lg border-0 bg-secondary px-3 text-sm text-foreground outline-none ring-1 ring-border transition-shadow focus:ring-2 focus:ring-foreground"
                   >
                     {PHONE_COUNTRIES.map((country) => (
                       <option key={country.code} value={country.code}>
@@ -161,19 +161,19 @@ const Auth = () => {
                       </option>
                     ))}
                   </select>
-                  <input
-                    value={phone}
-                    onChange={(event) => handlePhoneChange(event.target.value)}
-                    onKeyDown={handlePhoneKeyDown}
-                    onFocus={() => setPhone((current) => normalizePhoneInput(current, phoneCountry))}
-                    required
-                    type="tel"
-                    inputMode="numeric"
-                    maxLength={getPhoneMaxLength(phoneCountry)}
-                    pattern={getPhonePattern(phoneCountry)}
-                    placeholder={getPhonePlaceholder(phoneCountry)}
-                    className="h-11 min-w-0 flex-1 rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
-                  />
+                   <input
+                     value={phone}
+                     onChange={(event) => handlePhoneChange(event.target.value)}
+                     onKeyDown={handlePhoneKeyDown}
+                     onFocus={() => setPhone((current) => normalizePhoneInput(current, phoneCountry))}
+                     required
+                     type="tel"
+                     inputMode="numeric"
+                     maxLength={getPhoneMaxLength(phoneCountry)}
+                     pattern={getPhonePattern(phoneCountry)}
+                     placeholder={getPhonePlaceholder(phoneCountry)}
+                     className="h-10 sm:h-11 min-w-0 flex-1 box-border rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
+                   />
                 </div>
               </div>
 
@@ -187,7 +187,7 @@ const Auth = () => {
                   maxLength={isLogin ? undefined : 20}
                   pattern={isLogin ? undefined : "[A-Za-z0-9]+"}
                   placeholder={tr("auth.field.password")}
-                  className="h-11 w-full rounded-lg border-0 bg-secondary py-3 pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
+                  className="h-10 sm:h-11 w-full min-w-0 box-border rounded-lg border-0 bg-secondary py-3 pl-10 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
                 />
               </div>
 
