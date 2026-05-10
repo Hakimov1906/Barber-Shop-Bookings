@@ -132,14 +132,4 @@
    .tabular {
      font-variant-numeric: tabular-nums;
    }
-   /* Phone input group: ensure select doesn't overflow */
-   .phone-input-group select {
-     min-width: 70px;
-     max-width: 100px;
-     flex-shrink: 0;
-   }
-   .phone-input-group input {
-     min-width: 0;
-     flex: 1;
-   }
  }

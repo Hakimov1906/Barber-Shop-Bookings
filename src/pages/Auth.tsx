@@ -146,22 +146,22 @@ const Auth = () => {
                  </div>
                )}
 
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <div className="flex gap-2 phone-input-group">
-                  <select
-                    aria-label="Phone country"
-                    value={phoneCountry}
-                    onChange={(event) => handlePhoneCountryChange(event.target.value)}
-                    style={{ minWidth: 70, maxWidth: 100, flexShrink: 0 }}
-                    className="h-10 sm:h-11 w-20 sm:w-24 box-border rounded-lg border-0 bg-secondary px-2 text-sm text-foreground outline-none ring-1 ring-border transition-shadow focus:ring-2 focus:ring-foreground"
-                  >
-                    {PHONE_COUNTRIES.map((country) => (
-                      <option key={country.code} value={country.code}>
-                        {country.name}
-                      </option>
-                    ))}
-                  </select>
+              <div className="flex gap-2">
+                <select
+                  aria-label="Phone country"
+                  value={phoneCountry}
+                  onChange={(event) => handlePhoneCountryChange(event.target.value)}
+                  style={{ minWidth: 70, maxWidth: 100, flexShrink: 0 }}
+                  className="h-10 sm:h-11 w-20 sm:w-24 box-border rounded-lg border-0 bg-secondary px-3 text-sm text-foreground outline-none ring-1 ring-border transition-shadow focus:ring-2 focus:ring-foreground"
+                >
+                  {PHONE_COUNTRIES.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="relative flex-1">
+                  <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                   <input
                     value={phone}
                     onChange={(event) => handlePhoneChange(event.target.value)}
@@ -173,7 +173,7 @@ const Auth = () => {
                     maxLength={getPhoneMaxLength(phoneCountry)}
                     pattern={getPhonePattern(phoneCountry)}
                     placeholder={getPhonePlaceholder(phoneCountry)}
-                    className="h-10 sm:h-11 min-w-0 flex-1 box-border rounded-lg border-0 bg-secondary px-3 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
+                    className="h-10 sm:h-11 w-full min-w-0 box-border rounded-lg border-0 bg-secondary pl-10 pr-4 text-sm text-foreground outline-none ring-1 ring-border transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-foreground"
                   />
                 </div>
               </div>
