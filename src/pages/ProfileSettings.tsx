@@ -213,32 +213,33 @@ const ProfileSettings = () => {
             >
               {tr("profile.field.phone")}
             </label>
-            <div className="flex gap-2">
-                <select
-                  aria-label="Phone country"
-                  value={phoneCountry}
-                  onChange={(event) => handlePhoneCountryChange(event.target.value)}
-                  className="h-10 sm:h-11 w-36 box-border rounded-lg border-0 bg-secondary px-3 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
-                >
+            <div className="flex gap-2 phone-input-group">
+              <select
+                aria-label="Phone country"
+                value={phoneCountry}
+                onChange={(event) => handlePhoneCountryChange(event.target.value)}
+                style={{ minWidth: 70, maxWidth: 100, flexShrink: 0 }}
+                className="h-10 sm:h-11 w-20 sm:w-24 box-border rounded-lg border-0 bg-secondary px-2 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
+              >
                 {PHONE_COUNTRIES.map((country) => (
                   <option key={country.code} value={country.code}>
                     {country.name}
                   </option>
                 ))}
               </select>
-               <input
-                 id="profile-phone"
-                 value={phone}
-                 onChange={(event) => handlePhoneChange(event.target.value)}
-                 onKeyDown={handlePhoneKeyDown}
-                 onFocus={() => setPhone((current) => normalizePhoneInput(current, phoneCountry))}
-                 type="tel"
-                 inputMode="numeric"
-                 maxLength={getPhoneMaxLength(phoneCountry)}
-                 pattern={getPhonePattern(phoneCountry)}
-                 className="h-10 sm:h-11 min-w-0 flex-1 box-border rounded-lg border-0 bg-secondary px-4 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
-                 required
-               />
+              <input
+                id="profile-phone"
+                value={phone}
+                onChange={(event) => handlePhoneChange(event.target.value)}
+                onKeyDown={handlePhoneKeyDown}
+                onFocus={() => setPhone((current) => normalizePhoneInput(current, phoneCountry))}
+                type="tel"
+                inputMode="numeric"
+                maxLength={getPhoneMaxLength(phoneCountry)}
+                pattern={getPhonePattern(phoneCountry)}
+                className="h-10 sm:h-11 min-w-0 flex-1 box-border rounded-lg border-0 bg-secondary px-3 text-sm text-foreground outline-none ring-1 ring-border focus:ring-2 focus:ring-foreground"
+                required
+              />
             </div>
           </div>
 

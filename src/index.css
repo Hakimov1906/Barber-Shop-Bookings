@@ -96,40 +96,50 @@
   }
 }
 
-@layer utilities {
-  .page-shell {
-    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
-  }
-  .page-section {
-    @apply py-12 sm:py-16;
-  }
-  .section-title {
-    @apply text-2xl font-semibold sm:text-3xl;
-  }
-  .section-subtitle {
-    @apply mt-2 text-sm text-muted-foreground sm:text-base;
-  }
-  .surface-card {
-    @apply rounded-2xl border border-border bg-card;
-  }
-  .chip-row {
-    @apply flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
-  }
-  .card-shadow {
-    box-shadow: var(--shadow-card);
-  }
-  .card-shadow-hover {
-    box-shadow: var(--shadow-card-hover);
-  }
-  .nav-shadow {
-    box-shadow: var(--shadow-nav);
-  }
-  .text-hero {
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    line-height: 1.05;
-    letter-spacing: -0.03em;
-  }
-  .tabular {
-    font-variant-numeric: tabular-nums;
-  }
-}
+ @layer utilities {
+   .page-shell {
+     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+   }
+   .page-section {
+     @apply py-12 sm:py-16;
+   }
+   .section-title {
+     @apply text-2xl font-semibold sm:text-3xl;
+   }
+   .section-subtitle {
+     @apply mt-2 text-sm text-muted-foreground sm:text-base;
+   }
+   .surface-card {
+     @apply rounded-2xl border border-border bg-card;
+   }
+   .chip-row {
+     @apply flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden;
+   }
+   .card-shadow {
+     box-shadow: var(--shadow-card);
+   }
+   .card-shadow-hover {
+     box-shadow: var(--shadow-card-hover);
+   }
+   .nav-shadow {
+     box-shadow: var(--shadow-nav);
+   }
+   .text-hero {
+     font-size: clamp(2.5rem, 5vw, 4rem);
+     line-height: 1.05;
+     letter-spacing: -0.03em;
+   }
+   .tabular {
+     font-variant-numeric: tabular-nums;
+   }
+   /* Phone input group: ensure select doesn't overflow */
+   .phone-input-group select {
+     min-width: 70px;
+     max-width: 100px;
+     flex-shrink: 0;
+   }
+   .phone-input-group input {
+     min-width: 0;
+     flex: 1;
+   }
+ }
