@@ -12,13 +12,22 @@ const { logger } = require('./utils/logger');
 function createApp() {
   const app = express();
 
-  const rawCors = (process.env.CORS_ORIGIN || '').trim();
-  const corsOrigin = !rawCors || rawCors === '*'
+  const rawCors = (process.env.CORS_ORIGIN || '*').trim();
+  const corsOrigin = rawCors === '*'
     ? true
     : rawCors.split(',').map((o) => o.trim());
 
-  app.use(helmet());
-  app.use(cors({ origin: corsOrigin }));
+  app.use(helmet({
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false
+  }));
+  app.use(cors({
+    origin: corsOrigin,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
   app.use(express.json({ limit: '1mb' }));
   app.use(attachRequestId);
   app.use(requestLogger);
