@@ -1,13 +1,21 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
-import { AuthProvider } from "@/lib/auth";
+import { AuthProvider, useAuth } from "@/lib/auth";
 import { CartProvider } from "@/lib/cart";
 import Layout from "@/components/Layout";
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+  return <>{children}</>;
+};
 
 const Index = lazy(() => import("./pages/Index"));
 const Masters = lazy(() => import("./pages/Masters"));
@@ -21,6 +29,8 @@ const ProfileInfo = lazy(() => import("./pages/ProfileInfo"));
 const ProfileOrders = lazy(() => import("./pages/ProfileOrders"));
 const ProfileSettings = lazy(() => import("./pages/ProfileSettings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+
+const ProfileRecords = lazy(() => import("./pages/ProfileRecords"));
 
 const queryClient = new QueryClient();
 
@@ -48,10 +58,26 @@ const App = () => (
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/profile" element={<Profile />}>
-                      <Route index element={<ProfileInfo />} />
-                      <Route path="orders" element={<ProfileOrders />} />
-                      <Route path="records" element={<Navigate to="/profile/orders" replace />} />
-                      <Route path="settings" element={<ProfileSettings />} />
+                      <Route index element={
+                        <ProtectedRoute>
+                          <ProfileInfo />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="orders" element={
+                        <ProtectedRoute>
+                          <ProfileOrders />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="records" element={
+  <ProtectedRoute>
+    <ProfileRecords />
+  </ProtectedRoute>
+} />
+                      <Route path="settings" element={
+                        <ProtectedRoute>
+                          <ProfileSettings />
+                        </ProtectedRoute>
+                      } />
                     </Route>
                   </Route>
                   <Route path="*" element={<NotFound />} />

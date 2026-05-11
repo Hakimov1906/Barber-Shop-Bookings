@@ -4,12 +4,27 @@ import { cn } from "@/lib/utils";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { useEffect, useState } from "react";
 
 const TabBar = () => {
   const location = useLocation();
   const { totalItems } = useCart();
   const { isAuthenticated } = useAuth();
   const { tr } = useI18n();
+  const [isVisible, setIsVisible] = useState(true);
+
+  useEffect(() => {
+    const initialViewportHeight = window.innerHeight;
+    
+    const handleResize = () => {
+      const currentHeight = window.innerHeight;
+      const keyboardThreshold = initialViewportHeight * 0.5;
+      setIsVisible(currentHeight > initialViewportHeight - keyboardThreshold);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const tabs = [
     {
@@ -57,7 +72,10 @@ const TabBar = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-sm md:hidden">
+    <nav className={cn(
+      "fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur-sm md:hidden transition-transform duration-300",
+      !isVisible && "translate-y-full"
+    )}>
       <div className="flex items-center justify-around py-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;

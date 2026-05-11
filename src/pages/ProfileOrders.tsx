@@ -41,7 +41,7 @@ const sampleOrders = [
 
 const ProfileOrders = () => {
   const { token } = useAuth();
-  const { tr, formatDate } = useI18n();
+  const { tr, formatDate, price } = useI18n();
   const queryClient = useQueryClient();
 
   const bookingsQuery = useQuery({
@@ -70,16 +70,16 @@ const ProfileOrders = () => {
     },
   });
 
-  const orders = bookingsQuery.isError
-    ? sampleOrders
-    : bookingsQuery.data?.map((booking) => ({
-        id: booking.id,
-        date: booking.date,
-        time: booking.time.slice(0, 5),
-        total: `$${Number(booking.service_price).toFixed(2)}`,
-        status: getOrderStatus(booking.date),
-        service: booking.service_name,
-      })) ?? [];
+   const orders = bookingsQuery.isError
+     ? sampleOrders
+     : bookingsQuery.data?.map((booking) => ({
+         id: booking.id,
+         date: booking.date,
+         time: booking.time.slice(0, 5),
+         total: price(Number(booking.service_price)),
+         status: getOrderStatus(booking.date),
+         service: booking.service_name,
+       })) ?? [];
 
   const showEmpty = !bookingsQuery.isLoading && !bookingsQuery.isError && orders.length === 0;
 
