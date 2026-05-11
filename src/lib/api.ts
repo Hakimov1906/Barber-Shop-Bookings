@@ -910,24 +910,42 @@ const realApi = {
     }
   },
   register: async (body: RegisterRequest): Promise<RegisterResponse> => {
+    console.log("[API] Register attempt - URL:", `${API_BASE_URL}/api/auth/register`);
+    console.log("[API] Register payload:", body);
     try {
-      return await unwrapOpenApiResponse(
+      const result = await unwrapOpenApiResponse(
         client.POST("/api/auth/register", {
           body,
         }),
       );
+      console.log("[API] Register success:", result);
+      return result;
     } catch (error) {
+      console.error("[API] Register error:", error);
+      if (error instanceof HttpApiError) {
+        console.error("[API] Register HTTP status:", error.status);
+        console.error("[API] Register error payload:", error.payload);
+      }
       return toApiError(error);
     }
   },
   login: async (body: LoginRequest): Promise<LoginResponse> => {
+    console.log("[API] Login attempt - URL:", `${API_BASE_URL}/api/auth/login`);
+    console.log("[API] Login payload:", body);
     try {
-      return await unwrapOpenApiResponse(
+      const result = await unwrapOpenApiResponse(
         client.POST("/api/auth/login", {
           body,
         }),
       );
+      console.log("[API] Login success:", result);
+      return result;
     } catch (error) {
+      console.error("[API] Login error:", error);
+      if (error instanceof HttpApiError) {
+        console.error("[API] Login HTTP status:", error.status);
+        console.error("[API] Login error payload:", error.payload);
+      }
       return toApiError(error);
     }
   },

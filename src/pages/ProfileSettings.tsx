@@ -110,7 +110,7 @@ const ProfileSettings = () => {
     onSuccess: (response) => {
       syncUser({
         id: response.user.id,
-        fullName: response.user.full_name,
+        fullName: response.user.fullName,
         phone: response.user.phone,
       });
       toast({

@@ -62,7 +62,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = useCallback(
     async (phone: string, password: string) => {
+      console.log("[Auth] Login attempt for phone:", phone);
       const response = await api.login({ phone, password });
+      console.log("[Auth] Login success, user:", response.user);
       persist({
         token: response.token,
         user: {
@@ -81,7 +83,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       phone: string;
       password: string;
     }) => {
+      console.log("[Auth] Register attempt:", payload);
       await api.register(payload);
+      console.log("[Auth] Register API call completed, now logging in...");
       await login(payload.phone, payload.password);
     },
     [login],

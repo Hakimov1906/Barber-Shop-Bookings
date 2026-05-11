@@ -40,6 +40,7 @@ const Auth = () => {
     event.preventDefault();
     setIsSubmitting(true);
     const phoneValue = normalizePhoneInput(phone, phoneCountry);
+    console.log("[Auth] Submit form - mode:", isLogin ? "login" : "register", { fullName, phone: phoneValue, password });
     try {
       if (isLogin) {
         await login(phoneValue, password);
@@ -56,6 +57,7 @@ const Auth = () => {
       });
       navigate(redirectTo, { replace: true });
     } catch (error) {
+      console.error("[Auth] Submit error:", error);
       const description =
         error instanceof ApiError ? error.message : tr("auth.toast.error.desc");
       toast({

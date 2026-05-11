@@ -23,6 +23,8 @@ const client = createClient<paths>({
   baseUrl: API_BASE_URL,
 });
 
+console.log("[Client] API_BASE_URL:", API_BASE_URL);
+
 export async function unwrapOpenApiResponse<T>(
   operation: Promise<{ data?: T; error?: unknown; response: Response }>,
 ): Promise<T> {

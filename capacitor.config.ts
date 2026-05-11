@@ -6,7 +6,8 @@ const config: CapacitorConfig = {
   webDir: "dist",
   bundledWebRuntime: false,
   server: {
-    androidScheme: "https",
+    hostname: "localhost",
+    androidScheme: "http",
   },
 };
 
