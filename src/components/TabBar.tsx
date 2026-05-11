@@ -22,8 +22,18 @@ const TabBar = () => {
       setIsVisible(currentHeight > initialViewportHeight - keyboardThreshold);
     };
 
+    const handleFocus = () => setIsVisible(false);
+    const handleBlur = () => setIsVisible(true);
+
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    document.addEventListener("focusin", handleFocus);
+    document.addEventListener("focusout", handleBlur);
+    
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      document.removeEventListener("focusin", handleFocus);
+      document.removeEventListener("focusout", handleBlur);
+    };
   }, []);
 
   const tabs = [
